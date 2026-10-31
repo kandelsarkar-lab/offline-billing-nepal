@@ -1,0 +1,63 @@
+name: Feature request
+description: Suggest a feature or improvement
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an improvement. Please explain the real business problem, not only the solution, so we can find the simplest offline-friendly approach.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation in a shop, hotel, office or company.
+      placeholder: "Example: I need to track how much each customer still owes me."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe what you would like the app to do.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Billing and invoices
+        - Inventory and stock
+        - Purchases and suppliers
+        - Customers and credit
+        - Reports and VAT
+        - Printing
+        - Data and backup
+        - Nepali language and accessibility
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+      description: Any workaround you use today, or another approach that could work.
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Project constraints
+      options:
+        - label: This feature can work fully offline.
+          required: true
+        - label: This feature does not require a paid service, account or subscription.
+          required: true
+        - label: I searched existing issues and did not find a duplicate.
+          required: true

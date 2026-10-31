@@ -1,0 +1,2738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f172a">
+<title>Offline Billing Nepal — Free VAT / PAN billing, inventory &amp; stock</title>
+<meta name="description" content="Free, fully offline billing app for Nepal. VAT and PAN invoices, inventory, stock management, purchases, customers and reports. Works for kirana shops, hotels, offices and companies. No internet, no subscription.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231d4ed8'/><text x='32' y='45' font-size='34' text-anchor='middle' fill='white' font-family='Arial'>₨</text></svg>">
+<style>
+/* ============================================================
+   Offline Billing Nepal — styles
+   ============================================================ */
+* { box-sizing: border-box; }
+:root {
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --brand: #1d4ed8;
+  --brand-2: #0ea5e9;
+  --ok: #059669;
+  --warn: #d97706;
+  --danger: #dc2626;
+  --sidebar: #0b1220;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .05);
+}
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--brand); }
+h1, h2, h3, h4 { margin: 0; }
+.ico { width: 18px; height: 18px; flex: 0 0 auto; display: inline-block; vertical-align: -3px; }
+.muted { color: var(--muted); font-size: 12px; }
+.red-text { color: #b91c1c !important; }
+.green-text { color: #047857 !important; }
+.full { width: 100%; justify-content: center; }
+.spacer { flex: 1; }
+
+/* ---------- app layout ---------- */
+#app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 250px; flex: 0 0 250px; height: 100vh; position: sticky; top: 0;
+  background: linear-gradient(180deg, #0b1220 0%, #101c33 100%);
+  color: #cbd5e1; display: flex; flex-direction: column; padding: 18px 14px; z-index: 40;
+}
+.brand { display: flex; gap: 11px; align-items: center; padding: 4px 8px 18px; }
+.brand-logo {
+  width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex: 0 0 44px;
+  display: grid; place-items: center; color: #fff; font-size: 22px; font-weight: 800;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, .35);
+}
+.brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+.brand-text { min-width: 0; }
+.brand-name { color: #fff; font-weight: 700; font-size: 14px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brand-sub { font-size: 10.5px; color: #93a4bd; margin-top: 2px; letter-spacing: .02em; }
+.nav { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; overflow-y: auto; }
+.nav-link {
+  display: flex; align-items: center; gap: 11px; padding: 10px 12px; border: 0; border-radius: 10px;
+  background: transparent; color: #cbd5e1; font-size: 13.5px; font-weight: 500; text-align: left; transition: background .15s, color .15s;
+}
+.nav-link:hover { background: rgba(255, 255, 255, .06); color: #fff; }
+.nav-link.active {
+  background: linear-gradient(90deg, rgba(37, 99, 235, .95), rgba(14, 165, 233, .72));
+  color: #fff; box-shadow: 0 6px 16px rgba(37, 99, 235, .25);
+}
+.sidebar-foot { margin-top: auto; padding: 14px 8px 4px; border-top: 1px solid rgba(255, 255, 255, .08); font-size: 10.5px; color: #93a4bd; }
+.offline-chip { display: flex; align-items: center; gap: 6px; color: #86efac; font-weight: 600; margin-bottom: 5px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, .18); }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 14px;
+  padding: 13px 24px; background: rgba(255, 255, 255, .88); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.page-title h1 { font-size: 19px; letter-spacing: -.01em; }
+.page-title p { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); }
+.top-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.today { font-size: 11px; color: var(--muted); text-align: right; line-height: 1.35; }
+.today strong { color: #334155; font-size: 11.5px; }
+.menu-btn { display: none; }
+#view { padding: 22px 24px 60px; width: 100%; max-width: 1440px; margin: 0 auto; }
+.nav-overlay { display: none; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: #fff; color: #1e293b;
+  padding: 9px 13px; border-radius: 10px; font-size: 12.5px; font-weight: 600;
+  transition: background .15s, border-color .15s, box-shadow .15s, transform .05s; white-space: nowrap;
+}
+.btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; box-shadow: 0 5px 14px rgba(37, 99, 235, .22); }
+.btn.primary:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); }
+.btn.success { background: #059669; border-color: #059669; color: #fff; }
+.btn.success:hover { background: #047857; }
+.btn.danger { background: #fff5f5; border-color: #fecaca; color: #b91c1c; }
+.btn.danger:hover { background: #fee2e2; }
+.btn.ghost { background: transparent; border-color: transparent; color: #475569; }
+.btn.ghost:hover { background: #f1f5f9; }
+.btn.sm { padding: 6px 9px; font-size: 11.5px; border-radius: 8px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.icon-btn {
+  width: 30px; height: 30px; display: inline-grid; place-items: center; border: 1px solid transparent;
+  border-radius: 8px; background: transparent; color: #64748b;
+}
+.icon-btn:hover { background: #f1f5f9; color: #1e293b; }
+.icon-btn.danger:hover { background: #fee2e2; color: #b91c1c; }
+.icon-btn .ico { width: 16px; height: 16px; }
+
+/* ---------- cards / layout ---------- */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 18px; min-width: 0; }
+.card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; min-width: 0; }
+.card-head > * { min-width: 0; }
+.grid-2 > *, .bill-layout > *, .stack > *, .stat { min-width: 0; }
+.card-head h2 { font-size: 14.5px; letter-spacing: -.01em; }
+.card-head p { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+.stat { background: #fff; border: 1px solid var(--line); border-radius: 15px; padding: 15px 16px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.stat::after { content: ""; position: absolute; right: -20px; top: -20px; width: 70px; height: 70px; border-radius: 50%; background: #eff6ff; }
+.stat .label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.stat .value { font-size: 22px; font-weight: 800; margin-top: 6px; letter-spacing: -.02em; position: relative; }
+.stat .hint { font-size: 11px; color: var(--muted); margin-top: 3px; position: relative; }
+.stat.tone-blue::after { background: #dbeafe; }
+.stat.tone-green::after { background: #d1fae5; }
+.stat.tone-amber::after { background: #fef3c7; }
+.stat.tone-violet::after { background: #ede9fe; }
+
+/* ---------- forms ---------- */
+.form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field > label { font-size: 11.5px; font-weight: 600; color: #334155; }
+.field small { font-size: 10.5px; color: var(--muted); }
+.field.inline { flex-direction: row; align-items: center; gap: 8px; }
+.field.inline > label { white-space: nowrap; }
+.span-2 { grid-column: span 2; }
+.input {
+  width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; padding: 8px 10px;
+  background: #fff; font-size: 12.5px; color: var(--text); outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+textarea.input { resize: vertical; min-height: 38px; }
+select.input { appearance: auto; }
+.check { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #334155; font-weight: 500; }
+.check input { accent-color: #2563eb; width: 15px; height: 15px; }
+.notice {
+  margin-top: 12px; padding: 9px 11px; border-radius: 9px; font-size: 11.5px;
+  background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe;
+}
+.form-actions { margin-top: 16px; display: flex; gap: 8px; }
+
+/* ---------- toolbar ---------- */
+.toolbar { margin-bottom: 16px; padding: 14px 16px; }
+.toolbar-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.toolbar-row + .toolbar-row { margin-top: 10px; }
+.search-box { position: relative; flex: 1 1 240px; min-width: 180px; }
+.search-box .ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #94a3b8; }
+.search-box .input { padding-left: 32px; }
+.preset-row { display: flex; gap: 5px; flex-wrap: wrap; }
+
+/* ---------- tables ---------- */
+.table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th {
+  background: #f8fafc; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: #64748b; padding: 9px 11px; border-bottom: 1px solid var(--line); white-space: nowrap; font-weight: 700;
+}
+td { padding: 9px 11px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: #f8fafc; }
+.r { text-align: right; }
+.c { text-align: center; }
+.actions { white-space: nowrap; }
+.actions .btn + .btn, .actions .btn + .icon-btn, .actions .icon-btn + .icon-btn { margin-left: 3px; }
+.sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+
+/* ---------- badges ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; white-space: nowrap; letter-spacing: .01em;
+}
+.badge.green { background: #dcfce7; color: #166534; }
+.badge.red { background: #fee2e2; color: #991b1b; }
+.badge.amber { background: #fef3c7; color: #92400e; }
+.badge.blue { background: #dbeafe; color: #1e40af; }
+.badge.gray { background: #f1f5f9; color: #475569; }
+
+/* ---------- empty / lists ---------- */
+.empty { padding: 34px 18px; text-align: center; color: var(--muted); font-size: 12.5px; }
+.empty .big { font-size: 30px; margin-bottom: 8px; color: #cbd5e1; }
+.empty .big .ico { width: 34px; height: 34px; }
+.list { display: flex; flex-direction: column; }
+.list-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f1f5f9; }
+.list-item:last-child { border-bottom: 0; }
+.list-item .grow { flex: 1; min-width: 0; }
+.list-item .name { font-size: 12.5px; font-weight: 600; }
+.list-item .sub { font-size: 10.5px; }
+
+/* ---------- hero / dashboard ---------- */
+.hero {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: linear-gradient(120deg, #0f172a 0%, #1e3a8a 60%, #0369a1 100%);
+  color: #fff; border-radius: 18px; padding: 22px 24px; margin-bottom: 16px;
+  box-shadow: 0 12px 30px rgba(30, 58, 138, .18);
+}
+.hero h2 { font-size: 21px; letter-spacing: -.02em; }
+.hero p { margin: 4px 0 0; font-size: 12px; color: #c7d2fe; }
+.hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.hero .btn { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .22); color: #fff; }
+.hero .btn:hover { background: rgba(255, 255, 255, .18); }
+.hero .btn.primary { background: #fff; color: #1d4ed8; border-color: #fff; }
+.hero .btn.primary:hover { background: #eff6ff; }
+
+/* ---------- chart ---------- */
+.chart { display: flex; align-items: flex-end; gap: 8px; height: 185px; padding-top: 8px; }
+.chart-col { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; }
+.chart-bar { width: 100%; max-width: 44px; border-radius: 7px 7px 2px 2px; background: linear-gradient(180deg, #60a5fa, #2563eb); min-height: 3px; transition: height .25s; }
+.chart-val { font-size: 9px; color: #475569; font-weight: 700; white-space: nowrap; }
+.chart-label { font-size: 9.5px; color: var(--muted); }
+
+/* ---------- billing ---------- */
+.bill-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+.sticky { position: sticky; top: 84px; }
+.segmented { display: inline-flex; background: #f1f5f9; border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: 0; background: transparent; padding: 7px 11px; border-radius: 8px; font-size: 11.5px; font-weight: 700; color: #64748b; }
+.segmented button.active { background: #fff; color: #1d4ed8; box-shadow: 0 1px 3px rgba(15, 23, 42, .12); }
+.item-add { display: grid; grid-template-columns: minmax(180px, 2fr) 84px 105px 84px auto; gap: 8px; margin-bottom: 12px; }
+.cell-input {
+  width: 76px; border: 1px solid transparent; background: #f8fafc; border-radius: 6px;
+  padding: 4px 5px; font-size: 11.5px; text-align: right; outline: none;
+}
+.cell-input:focus { border-color: #93c5fd; background: #fff; box-shadow: 0 0 0 2px rgba(37, 99, 235, .1); }
+.totals { display: flex; flex-direction: column; gap: 7px; }
+.totals > div { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; color: #475569; }
+.totals > div b { color: #1e293b; }
+.totals .grand { border-top: 2px solid var(--line); margin-top: 3px; padding-top: 9px; font-size: 14px; color: var(--text); align-items: baseline; }
+.totals .grand b { font-size: 20px; color: #1d4ed8; letter-spacing: -.02em; }
+.big-totals > div { font-size: 13px; padding: 2px 0; }
+.pay-lines { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 11.5px; color: #475569; }
+.pay-lines b { color: #1e293b; }
+.summary-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.pay-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; }
+.pay-summary > div { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); }
+.pay-summary b { font-size: 14px; color: #1e293b; }
+
+/* ---------- settings ---------- */
+.logo-row { display: flex; gap: 14px; align-items: center; }
+.logo-preview { width: 76px; height: 76px; border-radius: 14px; border: 1px dashed #cbd5e1; background: #f8fafc; display: grid; place-items: center; overflow: hidden; color: var(--muted); font-size: 11px; flex: 0 0 76px; }
+.logo-preview img { width: 100%; height: 100%; object-fit: contain; }
+.logo-actions { display: flex; flex-direction: column; gap: 6px; font-size: 11px; }
+.logo-actions input[type="file"] { font-size: 11px; max-width: 230px; }
+.stack-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+
+/* ---------- preview / modal ---------- */
+.preview-note { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; }
+.invoice-preview { background: #e2e8f0; border-radius: 12px; padding: 14px; overflow: auto; max-height: 64vh; }
+.invoice-preview .inv-sheet.a4 { width: 100%; min-height: 0; padding: 9mm; box-shadow: 0 2px 14px rgba(15, 23, 42, .15); }
+.invoice-preview .inv-sheet.thermal { width: 300px; box-shadow: 0 2px 14px rgba(15, 23, 42, .15); }
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 100; background: rgba(15, 23, 42, .58);
+  display: flex; align-items: flex-start; justify-content: center; padding: 4vh 16px; overflow: auto;
+}
+.modal {
+  background: #fff; border-radius: 16px; width: 100%; max-width: 600px;
+  box-shadow: 0 26px 70px rgba(2, 6, 23, .38); display: flex; flex-direction: column; max-height: 92vh;
+  animation: modalPop .16s ease-out;
+}
+.modal.wide { max-width: 980px; }
+@keyframes modalPop { from { opacity: 0; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: none; } }
+.modal-head { display: flex; align-items: center; gap: 12px; padding: 15px 19px; border-bottom: 1px solid var(--line); }
+.modal-head h2 { font-size: 15.5px; }
+.modal-head .x { margin-left: auto; }
+.modal-body { padding: 18px 19px; overflow: auto; }
+.modal-foot { padding: 13px 19px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+body.modal-open { overflow: hidden; }
+
+#toastRoot { position: fixed; right: 18px; bottom: 18px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: #0f172a; color: #fff; padding: 10px 13px; border-radius: 10px; font-size: 12px;
+  box-shadow: 0 12px 30px rgba(2, 6, 23, .3); display: flex; gap: 8px; align-items: center;
+  transition: opacity .3s, transform .3s; max-width: 360px;
+}
+.toast .ico { width: 16px; height: 16px; }
+.toast.ok { border-left: 4px solid #22c55e; }
+.toast.error { border-left: 4px solid #ef4444; }
+.toast.warn { border-left: 4px solid #f59e0b; }
+
+/* ---------- welcome ---------- */
+.welcome-hero { background: linear-gradient(120deg, #0f172a, #1e3a8a 60%, #0369a1); color: #fff; border-radius: 14px; padding: 20px; }
+.welcome-badge { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; background: rgba(255, 255, 255, .14); padding: 4px 8px; border-radius: 999px; margin-bottom: 10px; }
+.welcome-hero h2 { font-size: 22px; letter-spacing: -.02em; }
+.welcome-hero p { margin: 8px 0 0; font-size: 12.5px; color: #c7d2fe; max-width: 640px; }
+.welcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.welcome-item { display: flex; gap: 10px; padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: #f8fafc; }
+.welcome-item .ico { width: 20px; height: 20px; color: #1d4ed8; margin-top: 2px; }
+.welcome-item div { display: flex; flex-direction: column; gap: 2px; }
+.welcome-item strong { font-size: 12.5px; }
+.welcome-item span { font-size: 11px; color: var(--muted); }
+
+/* ---------- invoice sheet ---------- */
+.inv-sheet { background: #fff; color: #111827; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; font-size: 11px; line-height: 1.45; }
+.inv-sheet.a4 { width: 210mm; min-height: 297mm; padding: 12mm; margin: 0 auto; }
+.inv-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+.inv-brand { display: flex; gap: 11px; align-items: flex-start; }
+.inv-logo { width: 54px; height: 54px; object-fit: contain; border-radius: 8px; }
+.inv-biz { font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+.inv-tag { font-size: 10px; color: #6b7280; margin-top: 1px; }
+.inv-meta { font-size: 10px; color: #374151; line-height: 1.5; }
+.inv-title { text-align: right; flex: 0 0 auto; }
+.inv-type { display: inline-block; border: 2px solid #111827; padding: 3px 9px; border-radius: 3px; font-weight: 800; letter-spacing: .09em; font-size: 12px; }
+.inv-no { font-size: 11px; margin-top: 5px; font-weight: 700; }
+.inv-rule { border: 0; border-top: 1.5px solid #111827; margin: 10px 0; }
+.inv-parties { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; margin-bottom: 10px; }
+.inv-label { font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; font-weight: 700; margin-bottom: 3px; }
+.inv-party-name { font-weight: 700; font-size: 12px; }
+.inv-meta-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.inv-meta-table td { padding: 1px 0; border: 0; }
+.inv-meta-table td:first-child { color: #6b7280; }
+.inv-meta-table td:last-child { text-align: right; font-weight: 600; }
+.inv-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 4px; }
+.inv-table th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 5px 6px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; color: #374151; }
+.inv-table td { border: 1px solid #e5e7eb; padding: 5px 6px; vertical-align: top; }
+.inv-item-name { font-weight: 600; }
+.inv-sub { font-size: 8.5px; color: #6b7280; }
+.inv-totals { margin-left: auto; width: 58%; margin-top: 8px; font-size: 10.5px; }
+.inv-totals .row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px dashed #e5e7eb; }
+.inv-totals .grand { border-top: 2px solid #111827; border-bottom: 2px solid #111827; font-weight: 800; font-size: 13px; padding: 6px 0; margin-top: 2px; }
+.inv-words { margin-top: 9px; font-size: 10px; background: #f9fafb; border: 1px dashed #d1d5db; padding: 6px 8px; border-radius: 3px; }
+.inv-note-box { margin-top: 6px; font-size: 9.5px; color: #374151; }
+.inv-foot { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-top: 16px; font-size: 9.5px; color: #374151; }
+.inv-sign { text-align: center; padding-top: 30px; border-top: 1px dashed #9ca3af; margin-top: 8px; font-size: 9.5px; }
+.inv-note { font-size: 8.5px; color: #6b7280; margin-top: 12px; text-align: center; }
+
+/* thermal receipt */
+.inv-sheet.thermal { width: 80mm; padding: 3mm; font-size: 10px; margin: 0 auto; }
+.thermal .t-center { text-align: center; }
+.thermal .t-biz { font-size: 14px; font-weight: 800; margin-top: 2px; }
+.thermal .t-rule { border-top: 1px dashed #111; margin: 5px 0; }
+.thermal .t-row { display: flex; justify-content: space-between; gap: 8px; }
+.thermal .t-item { margin: 4px 0; }
+.thermal .t-name { font-weight: 700; }
+.thermal .t-total { font-size: 13px; font-weight: 800; border-top: 1px solid #111; border-bottom: 1px solid #111; padding: 3px 0; margin: 3px 0; }
+
+/* report sheet */
+.rep-sheet { background: #fff; color: #111827; width: 210mm; margin: 0 auto; padding: 12mm; font-size: 10.5px; }
+.rep-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+.rep-biz { font-size: 18px; font-weight: 800; }
+.rep-meta { font-size: 9.5px; color: #4b5563; }
+.rep-title { text-align: right; font-size: 10px; }
+.rep-type { border: 2px solid #111827; display: inline-block; padding: 3px 8px; font-weight: 800; letter-spacing: .08em; margin-bottom: 4px; }
+.rep-table { width: 100%; border-collapse: collapse; margin: 6px 0 14px; font-size: 9.5px; }
+.rep-table th, .rep-table td { border: 1px solid #d1d5db; padding: 4px 6px; }
+.rep-table th { background: #f3f4f6; text-align: left; }
+.rep-sheet h3 { font-size: 11px; margin: 12px 0 4px; }
+.rep-foot { margin-top: 14px; font-size: 8.5px; color: #6b7280; text-align: center; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 1180px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .bill-layout { grid-template-columns: 1fr; }
+  .sticky { position: static; }
+}
+@media (max-width: 980px) {
+  .sidebar { position: fixed; left: 0; top: 0; transform: translateX(-102%); transition: transform .2s ease; box-shadow: 18px 0 50px rgba(2, 6, 23, .35); }
+  #app.nav-open .sidebar { transform: none; }
+  #app.nav-open .nav-overlay { display: block; position: fixed; inset: 0; background: rgba(15, 23, 42, .5); z-index: 35; }
+  .menu-btn { display: inline-grid; }
+  #view { padding: 16px 14px 60px; }
+  .topbar { padding: 11px 14px; }
+  .today { display: none; }
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 640px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .span-2 { grid-column: span 1; }
+  .item-add { grid-template-columns: 1fr 1fr; }
+  .item-add .input:first-child { grid-column: span 2; }
+  .item-add .btn { grid-column: span 2; }
+  .toolbar-row { align-items: stretch; }
+  .search-box { flex-basis: 100%; }
+  .welcome-grid { grid-template-columns: 1fr; }
+  .pay-summary { grid-template-columns: 1fr; }
+  .modal-backdrop { padding: 2vh 8px; }
+  .modal { max-height: 96vh; }
+  .hero h2 { font-size: 18px; }
+  .top-actions .btn span { display: none; }
+}
+
+/* ---------- print ---------- */
+#printRoot { display: none; }
+@media print {
+  body { background: #fff !important; }
+  #app, #modalRoot, #toastRoot, #sidebar, .topbar { display: none !important; }
+  #printRoot { display: block !important; }
+  .inv-sheet.a4 { width: auto; min-height: 0; padding: 0; margin: 0; box-shadow: none; }
+  .inv-sheet.thermal { width: auto; margin: 0; padding: 0; }
+  .rep-sheet { width: auto; margin: 0; padding: 0; }
+  .invoice-preview { background: #fff; padding: 0; max-height: none; }
+  .inv-table { page-break-inside: auto; }
+  .inv-table tr { page-break-inside: avoid; }
+}
+
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-6h6v6"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M9 7h6M9 11h6M9 15h4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.4 12.5a2 2 0 0 0 2 1.5h8.2a2 2 0 0 0 2-1.6L21 7H6"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-print" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 15H6L5 6"/><path d="M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+  <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></symbol>
+</svg>
+
+<div id="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="nav-overlay" id="navOverlay"></div>
+  <div class="main">
+    <header class="topbar">
+      <button type="button" class="btn icon-btn menu-btn" id="menuBtn" aria-label="Open menu">
+        <svg class="ico"><use href="#i-menu"></use></svg>
+      </button>
+      <div class="page-title">
+        <h1 id="pageTitle">Dashboard</h1>
+        <p id="pageSub">Your business at a glance</p>
+      </div>
+      <div class="top-actions">
+        <div class="today" id="todayLabel"></div>
+        <button type="button" class="btn primary" data-act="new-bill">
+          <svg class="ico"><use href="#i-plus"></use></svg><span>New Bill</span>
+        </button>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+<div id="printRoot"></div>
+<style id="printPageStyle"></style>
+
+<script>
+/* ============================================================
+   Offline Billing Nepal — single-file, zero-dependency app
+   Data stays in this browser (localStorage). No internet needed.
+   ============================================================ */
+
+/* ---------------- tiny helpers ---------------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+const r2 = (n) => Math.round((num(n) + Number.EPSILON) * 100) / 100;
+const fmt = (n) => r2(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n) => `${esc(S().currency || 'Rs.')} ${fmt(n)}`;
+const pad2 = (n) => String(n).padStart(2, '0');
+const pad4 = (n) => String(n).padStart(4, '0');
+const ico = (name) => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function addDays(iso, days) {
+  const d = new Date(iso + 'T00:00:00');
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function monthStart(iso) { return iso.slice(0, 8) + '01'; }
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function formatDateShort(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+}
+
+/* ---------------- Bikram Sambat (BS) calendar ---------------- */
+const BS_MONTHS = ['Baisakh', 'Jestha', 'Asar', 'Shrawan', 'Bhadra', 'Aswin', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'];
+const BS_CAL = [[30,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,30,29,31],[31,31,31,32,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[31,32,31,32,31,30,30,30,29,30,29,31],[31,31,31,32,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,31,32,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,31,32,31,31,29,30,30,29,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[31,32,31,32,31,30,30,30,29,30,29,31],[31,31,31,32,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[31,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,31,32,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[30,32,31,32,31,31,29,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,29,30,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,31],[31,31,31,32,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[31,32,31,32,31,30,30,30,29,30,29,31],[31,31,31,32,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,32,31,32,31,30,30,30,29,29,30,30],[31,32,31,32,31,30,30,30,29,30,29,31],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,31,31,31,30,29,30,29,30,30],[31,31,32,31,31,30,30,30,29,30,30,30],[31,32,31,32,30,31,30,30,29,30,30,30],[30,32,31,32,31,30,30,30,29,30,30,30],[31,31,32,31,31,31,30,30,29,30,30,30],[30,31,32,32,30,31,30,30,29,30,30,30],[30,32,31,32,31,30,30,30,29,30,30,30],[30,32,31,32,31,30,30,30,29,30,30,30]];
+const BS_START = 2000;
+const BS_EPOCH = Date.UTC(1943, 3, 14); // BS 2000-01-01
+const DAY_MS = 86400000;
+
+function bsYearDays(y) {
+  const idx = y - BS_START;
+  if (idx < 0 || idx >= BS_CAL.length) return 0;
+  return BS_CAL[idx].reduce((a, b) => a + b, 0);
+}
+function adToBs(iso) {
+  if (!iso) return null;
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  const diff = Math.round((Date.UTC(y, m - 1, d) - BS_EPOCH) / DAY_MS);
+  let days = diff + 1;
+  if (days < 1) return null;
+  let yi = 0;
+  while (yi < BS_CAL.length && days > bsYearDays(BS_START + yi)) {
+    days -= bsYearDays(BS_START + yi);
+    yi++;
+  }
+  if (yi >= BS_CAL.length) return null;
+  let mi = 0;
+  while (mi < 12 && days > BS_CAL[yi][mi]) {
+    days -= BS_CAL[yi][mi];
+    mi++;
+  }
+  return { year: BS_START + yi, month: mi, day: days };
+}
+function bsToAd(year, month, day) {
+  const yi = year - BS_START;
+  if (yi < 0 || yi >= BS_CAL.length || month < 0 || month > 11 || day < 1 || day > BS_CAL[yi][month]) return null;
+  let days = 1;
+  for (let i = 0; i < yi; i++) days += bsYearDays(BS_START + i);
+  for (let i = 0; i < month; i++) days += BS_CAL[yi][i];
+  days += day - 1;
+  const dt = new Date(BS_EPOCH + (days - 1) * DAY_MS);
+  return `${dt.getUTCFullYear()}-${pad2(dt.getUTCMonth() + 1)}-${pad2(dt.getUTCDate())}`;
+}
+function bsDateText(iso) {
+  const bs = adToBs(iso);
+  if (!bs) return '';
+  return `${bs.year}-${pad2(bs.month + 1)}-${pad2(bs.day)} (${BS_MONTHS[bs.month]} ${bs.day}, ${bs.year})`;
+}
+function bsShort(iso) {
+  const bs = adToBs(iso);
+  return bs ? `${bs.year}-${pad2(bs.month + 1)}-${pad2(bs.day)}` : '';
+}
+function fiscalYear(iso) {
+  const bs = adToBs(iso || todayISO());
+  if (!bs) return String(new Date().getFullYear());
+  const fy = bs.month >= 3 ? bs.year : bs.year - 1;
+  return `${fy}/${pad2((fy + 1) % 100)}`;
+}
+function fiscalCompact(iso) { return fiscalYear(iso).replace('/', '-'); }
+
+/* ---------------- amount in words (Nepali/Indian system) ---------------- */
+const ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+function twoWords(n) {
+  if (n < 20) return ONES[n];
+  return TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + ONES[n % 10] : '');
+}
+function intWords(n) {
+  n = Math.floor(Math.abs(n));
+  if (n === 0) return 'Zero';
+  const out = [];
+  const units = [[10000000, 'Crore'], [100000, 'Lakh'], [1000, 'Thousand'], [100, 'Hundred']];
+  for (const [v, name] of units) {
+    if (n >= v) {
+      out.push(intWords(Math.floor(n / v)) + ' ' + name);
+      n %= v;
+    }
+  }
+  if (n > 0) {
+    if (out.length) out.push('and');
+    out.push(twoWords(n));
+  }
+  return out.join(' ');
+}
+function amountInWords(amount) {
+  return intWords(Math.round(Math.abs(num(amount)))) + ' Rupees Only';
+}
+
+/* ---------------- store ---------------- */
+const STORAGE_KEY = 'offline-billing-nepal-v1';
+let DB = null;
+let draft = null;
+let purchaseDraft = null;
+let currentPage = 'dashboard';
+let isFirstRun = false;
+let pendingLogo = null;
+const ui = {
+  partyTab: 'customer',
+  report: { from: monthStart(todayISO()), to: todayISO() },
+};
+
+function defaultSettings() {
+  return {
+    businessName: 'My Business',
+    tagline: '',
+    address: '',
+    phone: '',
+    email: '',
+    panNo: '',
+    vatNo: '',
+    logo: '',
+    invoicePrefix: 'INV',
+    vatRate: 13,
+    currency: 'Rs.',
+    printSize: 'a4',
+    showBS: true,
+    footerNote: 'Thank you for your business!',
+    terms: 'Goods once sold will not be taken back.',
+    bankDetails: '',
+  };
+}
+function blankDB() {
+  return {
+    version: 1,
+    settings: defaultSettings(),
+    products: [],
+    parties: [],
+    invoices: [],
+    purchases: [],
+    adjustments: [],
+    counters: { invoice: 0, purchase: 0 },
+    createdAt: new Date().toISOString(),
+  };
+}
+function migrate(data) {
+  const base = blankDB();
+  const d = data && typeof data === 'object' ? data : {};
+  return {
+    ...base,
+    ...d,
+    settings: { ...base.settings, ...(d.settings || {}) },
+    products: Array.isArray(d.products) ? d.products : [],
+    parties: Array.isArray(d.parties) ? d.parties : [],
+    invoices: Array.isArray(d.invoices) ? d.invoices : [],
+    purchases: Array.isArray(d.purchases) ? d.purchases : [],
+    adjustments: Array.isArray(d.adjustments) ? d.adjustments : [],
+    counters: { ...base.counters, ...(d.counters || {}) },
+  };
+}
+function loadDB() {
+  let raw = null;
+  try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) { raw = null; }
+  if (!raw) {
+    isFirstRun = true;
+    DB = blankDB();
+    saveDB();
+    return;
+  }
+  try {
+    DB = migrate(JSON.parse(raw));
+  } catch (e) {
+    console.error('Could not read saved data', e);
+    DB = blankDB();
+    isFirstRun = true;
+  }
+}
+function saveDB() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  } catch (e) {
+    console.error(e);
+    toast('Could not save. Browser storage may be full.', 'error');
+  }
+}
+const S = () => DB.settings;
+
+/* ---------------- calculation ---------------- */
+function lineCalc(item, type, defaultRate) {
+  const qty = num(item.qty);
+  const rate = num(item.rate);
+  const disc = Math.max(0, Math.min(100, num(item.disc)));
+  const gross = r2(qty * rate);
+  const discount = r2(gross * disc / 100);
+  const net = r2(gross - discount);
+  const vatRate = item.vatRate === undefined || item.vatRate === null ? num(defaultRate) : num(item.vatRate);
+  const vatAmount = type === 'vat' && item.vat !== false ? r2(net * vatRate / 100) : 0;
+  return { gross, discount, net, vatAmount, total: r2(net + vatAmount), vatRate };
+}
+function billTotals(d) {
+  let subtotal = 0, discount = 0, taxable = 0, vat = 0;
+  (d.items || []).forEach((it) => {
+    const c = lineCalc(it, d.type, S().vatRate);
+    subtotal += c.gross;
+    discount += c.discount;
+    taxable += c.net;
+    vat += c.vatAmount;
+  });
+  return { subtotal: r2(subtotal), discount: r2(discount), taxable: r2(taxable), vat: r2(vat), total: r2(taxable + vat) };
+}
+function itemNet(it, type) {
+  if (it.net !== undefined && it.net !== null) return num(it.net);
+  return lineCalc(it, type, S().vatRate).net;
+}
+function itemVat(it, type) {
+  if (it.vatAmount !== undefined && it.vatAmount !== null) return num(it.vatAmount);
+  return lineCalc(it, type, S().vatRate).vatAmount;
+}
+function invoiceStatus(inv) {
+  if (inv.type === 'estimate') return 'estimate';
+  const due = r2(num(inv.total) - num(inv.received));
+  if (due <= 0.009) return 'paid';
+  if (num(inv.received) > 0) return 'partial';
+  return 'unpaid';
+}
+function calcPurchase(p) {
+  let subtotal = 0;
+  (p.items || []).forEach((it) => { subtotal += num(it.qty) * num(it.rate); });
+  subtotal = r2(subtotal);
+  const vat = p.vat ? r2(subtotal * num(p.vatRate) / 100) : 0;
+  return { subtotal, vat, total: r2(subtotal + vat) };
+}
+function nextInvoiceNo(date) {
+  return `${S().invoicePrefix || 'INV'}-${fiscalCompact(date || todayISO())}-${pad4((DB.counters.invoice || 0) + 1)}`;
+}
+function nextPurchaseNo(date) {
+  return `PUR-${fiscalCompact(date || todayISO())}-${pad4((DB.counters.purchase || 0) + 1)}`;
+}
+function isLowStock(p) {
+  return p.track !== false && num(p.stock) <= num(p.lowStock ?? 0);
+}
+function typeLabel(type) {
+  return type === 'vat' ? 'VAT Bill' : type === 'pan' ? 'PAN Bill' : 'Estimate';
+}
+
+/* ---------------- shell rendering ---------------- */
+const NAV_ITEMS = [
+  { page: 'dashboard', icon: 'home', label: 'Dashboard' },
+  { page: 'billing', icon: 'receipt', label: 'New Bill' },
+  { page: 'invoices', icon: 'list', label: 'Invoices' },
+  { page: 'inventory', icon: 'box', label: 'Inventory' },
+  { page: 'purchases', icon: 'cart', label: 'Purchases' },
+  { page: 'parties', icon: 'users', label: 'Customers' },
+  { page: 'reports', icon: 'chart', label: 'Reports' },
+  { page: 'settings', icon: 'settings', label: 'Settings' },
+];
+
+function renderSidebar() {
+  const s = S();
+  const logo = s.logo
+    ? `<img src="${esc(s.logo)}" alt="logo">`
+    : `<span>₨</span>`;
+  const nav = NAV_ITEMS.map((n) => `<button type="button" class="nav-link ${currentPage === n.page ? 'active' : ''}" data-page="${n.page}">${ico(n.icon)}<span>${n.label}</span></button>`).join('');
+  $('#sidebar').innerHTML = `
+    <div class="brand">
+      <div class="brand-logo">${logo}</div>
+      <div class="brand-text">
+        <div class="brand-name">${esc(s.businessName || 'My Business')}</div>
+        <div class="brand-sub">Offline Billing Nepal</div>
+      </div>
+    </div>
+    <nav class="nav">${nav}</nav>
+    <div class="sidebar-foot">
+      <div class="offline-chip"><span class="dot"></span> Works fully offline</div>
+      <div class="muted">v1.0 · MIT License</div>
+    </div>`;
+}
+
+function render() {
+  const p = PAGES[currentPage] || PAGES.dashboard;
+  renderSidebar();
+  $('#pageTitle').textContent = p.title;
+  $('#pageSub').textContent = p.sub;
+  $('#view').innerHTML = p.render();
+  if (p.mount) p.mount();
+  const t = todayISO();
+  $('#todayLabel').innerHTML = `<strong>${formatDate(t)}</strong><br>${S().showBS ? bsShort(t) + ' BS' : '&nbsp;'}`;
+  document.title = `${p.title} · Offline Billing Nepal`;
+}
+
+function navigate(page) {
+  if (!PAGES[page]) return;
+  currentPage = page;
+  closeModal();
+  $('#app').classList.remove('nav-open');
+  render();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+/* ---------------- modal / toast ---------------- */
+function openModal({ title, body, footer = '', wide = false, onMount = null }) {
+  $('#modalRoot').innerHTML = `
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal ${wide ? 'wide' : ''}" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h2>${title}</h2>
+          <button type="button" class="icon-btn x" data-act="close-modal" aria-label="Close">${ico('close')}</button>
+        </div>
+        <div class="modal-body">${body}</div>
+        ${footer ? `<div class="modal-foot">${footer}</div>` : ''}
+      </div>
+    </div>`;
+  document.body.classList.add('modal-open');
+  if (onMount) onMount($('#modalRoot'));
+  setTimeout(() => {
+    const f = $('#modalRoot .modal-body input:not([type="hidden"]), #modalRoot .modal-body select, #modalRoot .modal-body textarea');
+    if (f && !f.readOnly && !f.disabled) f.focus();
+  }, 60);
+}
+function closeModal() {
+  $('#modalRoot').innerHTML = '';
+  document.body.classList.remove('modal-open');
+}
+function toast(message, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `${ico(type === 'error' ? 'warning' : type === 'warn' ? 'warning' : 'check')}<span>${esc(message)}</span>`;
+  $('#toastRoot').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateY(6px)'; }, 2600);
+  setTimeout(() => el.remove(), 3000);
+}
+
+/* ---------------- global events ---------------- */
+document.addEventListener('click', (e) => {
+  if (e.target.classList && e.target.classList.contains('modal-backdrop')) { closeModal(); return; }
+  const nav = e.target.closest('[data-page]');
+  if (nav) { e.preventDefault(); navigate(nav.dataset.page); return; }
+  const actionEl = e.target.closest('[data-act]');
+  if (!actionEl) return;
+  const action = actionEl.dataset.act;
+  if (!action) return;
+  e.preventDefault();
+  handleAction(action, actionEl.dataset.id, actionEl, actionEl.dataset.idx);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+function handleAction(action, id, el, idx) {
+  switch (action) {
+    case 'close-modal': closeModal(); break;
+    case 'new-bill': draft = null; navigate('billing'); break;
+    case 'bill-type': if (draft) { draft.type = id; render(); } break;
+    case 'add-item': addBillItem(); break;
+    case 'remove-item': if (draft) { draft.items.splice(Number(idx), 1); render(); } break;
+    case 'bill-save': saveBill(false); break;
+    case 'bill-save-print': saveBill(true); break;
+    case 'bill-clear':
+      if (draft && draft.items.length && !confirm('Clear this bill and remove all items?')) return;
+      draft = null; render(); break;
+    case 'bill-full-pay':
+      if (draft) { draft.received = billTotals(draft).total; render(); } break;
+    case 'view-invoice': openInvoicePreview(DB.invoices.find((i) => i.id === id)); break;
+    case 'print-invoice': {
+      const inv = DB.invoices.find((i) => i.id === id);
+      if (inv) printInvoice(inv, el.dataset.size || 'a4');
+      break;
+    }
+    case 'pay-invoice': openPaymentModal(id); break;
+    case 'del-invoice': deleteInvoice(id); break;
+    case 'new-product': openProductModal(null, el.dataset.for === 'bill'); break;
+    case 'edit-product': openProductModal(id); break;
+    case 'del-product': deleteProduct(id); break;
+    case 'stock-in': openStockIn(id); break;
+    case 'adjust-stock': openAdjust(id); break;
+    case 'product-history': openProductHistory(id); break;
+    case 'new-party': openPartyModal(null, el.dataset.type || ui.partyTab, el.dataset.for === 'bill' ? afterNewBillParty : null); break;
+    case 'edit-party': openPartyModal(id); break;
+    case 'del-party': deleteParty(id); break;
+    case 'party-tab': ui.partyTab = id; render(); break;
+    case 'new-purchase': purchaseDraft = { date: todayISO(), partyId: '', supplierBillNo: '', vat: true, vatRate: S().vatRate, items: [], note: '' }; render(); break;
+    case 'cancel-purchase': purchaseDraft = null; render(); break;
+    case 'add-purchase-item': addPurchaseItem(); break;
+    case 'remove-purchase-item': if (purchaseDraft) { purchaseDraft.items.splice(Number(idx), 1); render(); } break;
+    case 'save-purchase': savePurchase(); break;
+    case 'view-purchase': openPurchaseView(id); break;
+    case 'del-purchase': deletePurchase(id); break;
+    case 'welcome-fresh': closeModal(); navigate('settings'); break;
+    case 'welcome-demo': closeModal(); loadDemoData(); break;
+    case 'export-backup': exportBackup(); break;
+    case 'import-backup': { const f = $('#importFile'); if (f) f.click(); else toast('Open Settings to import a backup', 'warn'); break; }
+    case 'load-demo': closeModal(); loadDemoData(); break;
+    case 'reset-all': resetAll(); break;
+    case 'remove-logo': S().logo = ''; saveDB(); render(); toast('Logo removed'); break;
+    case 'export-sales': exportSalesCSV(); break;
+    case 'export-vat': exportVatCSV(); break;
+    case 'export-stock': exportStockCSV(); break;
+    case 'print-report': printReport(); break;
+    case 'report-preset': setReportPreset(id); break;
+    default: break;
+  }
+}
+
+function afterNewBillParty(party) {
+  if (!draft) draft = newDraft();
+  draft.partyId = party.id;
+  draft.party = { name: party.name, phone: party.phone || '', address: party.address || '', pan: party.pan || '', vat: party.vat || '' };
+  render();
+}
+
+/* ---------------- dashboard ---------------- */
+function dashboardData() {
+  const today = todayISO();
+  const month = today.slice(0, 7);
+  const sales = DB.invoices.filter((i) => i.type !== 'estimate');
+  const todaySales = sales.filter((i) => i.date === today).reduce((a, i) => a + num(i.total), 0);
+  const monthSales = sales.filter((i) => i.date.startsWith(month)).reduce((a, i) => a + num(i.total), 0);
+  const unpaid = sales.reduce((a, i) => a + Math.max(0, num(i.total) - num(i.received)), 0);
+  const low = DB.products.filter(isLowStock);
+  const stockValue = DB.products.reduce((a, p) => a + (p.track === false ? 0 : num(p.stock) * num(p.cost)), 0);
+  const monthCount = sales.filter((i) => i.date.startsWith(month)).length;
+  return { todaySales, monthSales, unpaid, low, stockValue, monthCount, sales };
+}
+
+function statCard(label, value, hint, tone) {
+  return `<div class="stat ${tone || ''}">
+    <div class="label">${label}</div>
+    <div class="value">${value}</div>
+    <div class="hint">${hint || ''}</div>
+  </div>`;
+}
+
+function salesChartHTML() {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = addDays(todayISO(), -i);
+    const total = DB.invoices.filter((inv) => inv.type !== 'estimate' && inv.date === d).reduce((a, inv) => a + num(inv.total), 0);
+    days.push({ d, total });
+  }
+  const max = Math.max(1, ...days.map((x) => x.total));
+  return `<div class="chart">${days.map((x) => `
+    <div class="chart-col">
+      <div class="chart-val">${x.total ? fmt(x.total) : ''}</div>
+      <div class="chart-bar" style="height:${Math.max(3, Math.round((x.total / max) * 100))}%" title="${formatDate(x.d)}: ${money(x.total)}"></div>
+      <div class="chart-label">${new Date(x.d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short' })}</div>
+    </div>`).join('')}</div>`;
+}
+
+function dashboardHTML() {
+  const d = dashboardData();
+  const recent = DB.invoices.slice().sort((a, b) => (b.date + b.createdAt).localeCompare(a.date + a.createdAt)).slice(0, 6);
+  return `
+    <div class="hero">
+      <div>
+        <h2>${esc(S().businessName || 'My Business')}</h2>
+        <p>${S().showBS ? bsDateText(todayISO()) : formatDate(todayISO())} · Everything is saved on this device.</p>
+      </div>
+      <div class="hero-actions">
+        <button type="button" class="btn primary" data-act="new-bill">${ico('plus')} New bill</button>
+        <button type="button" class="btn" data-page="inventory">${ico('box')} Inventory</button>
+      </div>
+    </div>
+    <div class="stat-grid">
+      ${statCard("Today's sales", money(d.todaySales), 'Invoices created today', 'tone-blue')}
+      ${statCard('This month', money(d.monthSales), `${d.monthCount} invoice(s)`, 'tone-green')}
+      ${statCard('Outstanding', money(d.unpaid), 'Balance to collect', 'tone-amber')}
+      ${statCard('Stock value', money(d.stockValue), 'At purchase cost', 'tone-violet')}
+    </div>
+    <div class="grid-2">
+      <section class="card">
+        <div class="card-head"><div><h2>Last 7 days</h2><p>Daily sales including VAT</p></div></div>
+        ${salesChartHTML()}
+      </section>
+      <section class="card">
+        <div class="card-head"><div><h2>Low stock</h2><p>${d.low.length} item(s) need attention</p></div><button type="button" class="btn sm" data-page="inventory">View all</button></div>
+        ${d.low.length ? `<div class="list">${d.low.slice(0, 6).map((p) => `
+          <div class="list-item">
+            <div class="grow"><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.category || 'Uncategorised')} · alert at ${num(p.lowStock)} ${esc(p.unit || '')}</div></div>
+            <span class="badge red">${num(p.stock)} left</span>
+            <button type="button" class="btn sm" data-act="stock-in" data-id="${p.id}">Restock</button>
+          </div>`).join('')}</div>` : `<div class="empty"><div class="big">${ico('check')}</div>All stock levels look healthy.</div>`}
+      </section>
+    </div>
+    <section class="card" style="margin-top:16px">
+      <div class="card-head"><div><h2>Recent invoices</h2><p>Latest bills from your shop</p></div><button type="button" class="btn sm" data-page="invoices">View all</button></div>
+      ${recent.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Type</th><th class="r">Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>${recent.map((inv) => `<tr>
+          <td><strong>${esc(inv.no)}</strong></td>
+          <td>${formatDate(inv.date)}<div class="sub">${S().showBS ? bsShort(inv.date) + ' BS' : ''}</div></td>
+          <td>${esc(inv.party?.name || 'Walk-in Customer')}</td>
+          <td>${typeBadge(inv.type)}</td>
+          <td class="r"><strong>${money(inv.total)}</strong></td>
+          <td>${statusBadge(inv.status)}</td>
+          <td class="r"><button type="button" class="btn sm" data-act="view-invoice" data-id="${inv.id}">View</button></td>
+        </tr>`).join('')}</tbody>
+      </table></div>` : `<div class="empty"><div class="big">${ico('receipt')}</div>No invoices yet. Create your first bill.</div>`}
+    </section>`;
+}
+
+function typeBadge(type) {
+  const cls = type === 'vat' ? 'blue' : type === 'pan' ? 'gray' : 'amber';
+  return `<span class="badge ${cls}">${typeLabel(type)}</span>`;
+}
+function statusBadge(status) {
+  const map = { paid: ['green', 'Paid'], partial: ['amber', 'Partial'], unpaid: ['red', 'Unpaid'], estimate: ['gray', 'Estimate'] };
+  const [cls, label] = map[status] || ['gray', status || '—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+/* ---------------- billing ---------------- */
+function newDraft() {
+  return {
+    type: 'vat',
+    date: todayISO(),
+    dueDate: '',
+    partyId: '',
+    party: { name: '', phone: '', address: '', pan: '', vat: '' },
+    items: [],
+    payment: 'Cash',
+    note: '',
+    received: 0,
+  };
+}
+function ensureDraft() {
+  if (!draft) draft = newDraft();
+  return draft;
+}
+
+function billingHTML() {
+  const d = ensureDraft();
+  const t = billTotals(d);
+  const no = nextInvoiceNo(d.date);
+  const customers = DB.parties.filter((p) => p.type === 'customer');
+  const products = DB.products.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const productOptions = products.map((p) => `<option value="${p.id}" data-price="${num(p.price)}" data-stock="${num(p.stock)}" data-track="${p.track !== false ? 1 : 0}">${esc(p.name)}${p.track !== false ? ` · ${num(p.stock)} ${esc(p.unit || '')} left` : ' · service'}</option>`).join('');
+  const due = Math.max(0, t.total - num(d.received));
+  const change = Math.max(0, num(d.received) - t.total);
+  return `
+  <div class="bill-layout">
+    <div class="stack">
+      <section class="card">
+        <div class="card-head">
+          <div><h2>Invoice details</h2><p>Choose the bill type and date</p></div>
+          <div class="segmented">
+            <button type="button" class="${d.type === 'vat' ? 'active' : ''}" data-act="bill-type" data-id="vat">VAT Bill</button>
+            <button type="button" class="${d.type === 'pan' ? 'active' : ''}" data-act="bill-type" data-id="pan">PAN Bill</button>
+            <button type="button" class="${d.type === 'estimate' ? 'active' : ''}" data-act="bill-type" data-id="estimate">Estimate</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Invoice No.</label><input class="input" value="${esc(no)}" readonly></div>
+          <div class="field"><label>Date (AD)</label><input class="input" type="date" id="billDate" value="${esc(d.date)}"><small>BS: ${esc(bsShort(d.date) || '—')}</small></div>
+          <div class="field"><label>Due date</label><input class="input" type="date" id="billDue" value="${esc(d.dueDate)}"></div>
+          <div class="field"><label>Payment method</label><select class="input" id="billPayment">${['Cash', 'Card', 'eSewa', 'Khalti', 'Bank Transfer', 'Credit', 'Other'].map((m) => `<option ${d.payment === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+        </div>
+        <div class="notice">${d.type === 'vat' ? `VAT at ${num(S().vatRate)}% will be added to taxable items.` : d.type === 'pan' ? 'PAN bill: no VAT is charged.' : 'Estimate / quotation: stock will not be deducted.'}</div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div><h2>Customer</h2><p>Pick a saved customer or enter details</p></div><button type="button" class="btn sm" data-act="new-party" data-type="customer" data-for="bill">${ico('plus')} New customer</button></div>
+        <div class="form-grid">
+          <div class="field span-2"><label>Saved customer</label><select class="input" id="billPartySel">
+            <option value="">Walk-in / Cash customer</option>
+            ${customers.map((p) => `<option value="${p.id}" ${d.partyId === p.id ? 'selected' : ''}>${esc(p.name)}${p.phone ? ' · ' + esc(p.phone) : ''}</option>`).join('')}
+          </select></div>
+          <div class="field"><label>Name</label><input class="input" id="billPartyName" value="${esc(d.party.name)}" placeholder="Walk-in Customer"></div>
+          <div class="field"><label>Phone</label><input class="input" id="billPartyPhone" value="${esc(d.party.phone)}" placeholder="98XXXXXXXX"></div>
+          <div class="field"><label>PAN / VAT No.</label><input class="input" id="billPartyPan" value="${esc(d.party.pan || d.party.vat || '')}" placeholder="Optional"></div>
+          <div class="field span-2"><label>Address</label><input class="input" id="billPartyAddress" value="${esc(d.party.address)}" placeholder="City / area"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><div><h2>Items</h2><p>Add products or services to this bill</p></div><button type="button" class="btn sm" data-act="new-product" data-for="bill">${ico('plus')} New product</button></div>
+        <div class="item-add">
+          <select class="input" id="itemProduct"><option value="">Select product…</option>${productOptions}</select>
+          <input class="input" id="itemQty" type="number" min="0.01" step="any" value="1" placeholder="Qty" title="Quantity">
+          <input class="input" id="itemRate" type="number" min="0" step="any" placeholder="Rate" title="Rate">
+          <input class="input" id="itemDisc" type="number" min="0" max="100" step="any" value="0" placeholder="Disc %" title="Discount percent">
+          <button type="button" class="btn primary" data-act="add-item">${ico('plus')} Add</button>
+        </div>
+        ${d.items.length ? `<div class="table-wrap"><table class="bill-table">
+          <thead><tr><th>#</th><th>Item</th><th class="r">Qty</th><th>Unit</th><th class="r">Rate</th><th class="r">Disc %</th><th class="r">VAT</th><th class="r">Amount</th><th></th></tr></thead>
+          <tbody id="billItems">${d.items.map((it, i) => {
+            const c = lineCalc(it, d.type, S().vatRate);
+            return `<tr data-idx="${i}">
+              <td class="c">${i + 1}</td>
+              <td><strong>${esc(it.name)}</strong><div class="sub">${esc(it.sku || '')}</div></td>
+              <td class="r"><input class="cell-input" data-idx="${i}" data-field="qty" type="number" min="0" step="any" value="${num(it.qty)}"></td>
+              <td>${esc(it.unit || '')}</td>
+              <td class="r"><input class="cell-input" data-idx="${i}" data-field="rate" type="number" min="0" step="any" value="${num(it.rate)}"></td>
+              <td class="r"><input class="cell-input" data-idx="${i}" data-field="disc" type="number" min="0" max="100" step="any" value="${num(it.disc)}"></td>
+              <td class="r line-vat">${money(c.vatAmount)}</td>
+              <td class="r line-total"><strong>${money(c.total)}</strong></td>
+              <td class="r"><button type="button" class="icon-btn danger" data-act="remove-item" data-idx="${i}" title="Remove">${ico('trash')}</button></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No items yet. Select a product above and click Add.</div>`}
+      </section>
+    </div>
+
+    <aside class="stack">
+      <section class="card sticky">
+        <div class="card-head"><div><h2>Summary</h2><p>${typeLabel(d.type)}</p></div></div>
+        <div class="totals">
+          <div><span>Subtotal</span><b id="sumSubtotal">${money(t.subtotal)}</b></div>
+          <div><span>Discount</span><b id="sumDiscount">${money(t.discount)}</b></div>
+          <div><span>Taxable amount</span><b id="sumTaxable">${money(t.taxable)}</b></div>
+          <div><span>VAT (${num(S().vatRate)}%)</span><b id="sumVat">${money(t.vat)}</b></div>
+          <div class="grand"><span>Grand total</span><b id="sumTotal">${money(t.total)}</b></div>
+        </div>
+        <div class="field" style="margin-top:14px"><label>Amount received</label><input class="input" id="billReceived" type="number" min="0" step="any" value="${num(d.received)}"></div>
+        <div class="pay-lines">
+          <div><span>Balance due</span><b id="sumDue">${money(due)}</b></div>
+          <div><span>Change to return</span><b id="sumChange">${money(change)}</b></div>
+        </div>
+        <button type="button" class="btn sm ghost full" data-act="bill-full-pay">Mark as fully paid</button>
+        <div class="field" style="margin-top:12px"><label>Note / remarks</label><textarea class="input" id="billNote" rows="2" placeholder="Optional note on this bill">${esc(d.note)}</textarea></div>
+        <div class="summary-actions">
+          <button type="button" class="btn primary full" data-act="bill-save-print">${ico('print')} Save &amp; print</button>
+          <button type="button" class="btn success full" data-act="bill-save">${ico('check')} Save invoice</button>
+          <button type="button" class="btn ghost full" data-act="bill-clear">Clear</button>
+        </div>
+      </section>
+    </aside>
+  </div>`;
+}
+
+function mountBilling() {
+  const d = ensureDraft();
+  const dateEl = $('#billDate');
+  if (dateEl) dateEl.addEventListener('change', () => { d.date = dateEl.value || todayISO(); render(); });
+  const dueEl = $('#billDue');
+  if (dueEl) dueEl.addEventListener('change', () => { d.dueDate = dueEl.value; });
+  const payEl = $('#billPayment');
+  if (payEl) payEl.addEventListener('change', () => { d.payment = payEl.value; });
+  const partySel = $('#billPartySel');
+  if (partySel) partySel.addEventListener('change', () => {
+    const p = DB.parties.find((x) => x.id === partySel.value);
+    if (p) {
+      d.partyId = p.id;
+      d.party = { name: p.name, phone: p.phone || '', address: p.address || '', pan: p.pan || '', vat: p.vat || '' };
+    } else {
+      d.partyId = '';
+      d.party = { name: '', phone: '', address: '', pan: '', vat: '' };
+    }
+    render();
+  });
+  const bindParty = (sel, field) => {
+    const el = $(sel);
+    if (el) el.addEventListener('input', () => { d.party[field] = el.value; });
+  };
+  bindParty('#billPartyName', 'name');
+  bindParty('#billPartyPhone', 'phone');
+  bindParty('#billPartyPan', 'pan');
+  bindParty('#billPartyAddress', 'address');
+  const noteEl = $('#billNote');
+  if (noteEl) noteEl.addEventListener('input', () => { d.note = noteEl.value; });
+  const recEl = $('#billReceived');
+  if (recEl) recEl.addEventListener('input', () => { d.received = num(recEl.value); updateBillUI(); });
+  const prodEl = $('#itemProduct');
+  if (prodEl) prodEl.addEventListener('change', () => {
+    const opt = prodEl.selectedOptions[0];
+    if (opt && opt.value) {
+      $('#itemRate').value = opt.dataset.price || '';
+      $('#itemQty').value = 1;
+      $('#itemDisc').value = 0;
+      $('#itemQty').focus();
+    }
+  });
+  const itemsBody = $('#billItems');
+  if (itemsBody) itemsBody.addEventListener('input', (e) => {
+    const inp = e.target.closest('.cell-input');
+    if (!inp) return;
+    const i = Number(inp.dataset.idx);
+    const field = inp.dataset.field;
+    if (!d.items[i]) return;
+    d.items[i][field] = num(inp.value);
+    updateBillUI();
+  });
+}
+
+function updateBillUI() {
+  const d = ensureDraft();
+  const t = billTotals(d);
+  const set = (sel, val) => { const el = $(sel); if (el) el.textContent = val; };
+  set('#sumSubtotal', money(t.subtotal));
+  set('#sumDiscount', money(t.discount));
+  set('#sumTaxable', money(t.taxable));
+  set('#sumVat', money(t.vat));
+  set('#sumTotal', money(t.total));
+  set('#sumDue', money(Math.max(0, t.total - num(d.received))));
+  set('#sumChange', money(Math.max(0, num(d.received) - t.total)));
+  $$('#billItems tr[data-idx]').forEach((tr) => {
+    const i = Number(tr.dataset.idx);
+    const it = d.items[i];
+    if (!it) return;
+    const c = lineCalc(it, d.type, S().vatRate);
+    const vatCell = tr.querySelector('.line-vat');
+    const totalCell = tr.querySelector('.line-total');
+    if (vatCell) vatCell.textContent = money(c.vatAmount);
+    if (totalCell) totalCell.innerHTML = `<strong>${money(c.total)}</strong>`;
+  });
+}
+
+function addBillItem() {
+  const d = ensureDraft();
+  const sel = $('#itemProduct');
+  const pid = sel ? sel.value : '';
+  if (!pid) { toast('Select a product first', 'warn'); return; }
+  const p = DB.products.find((x) => x.id === pid);
+  if (!p) return;
+  const qty = num($('#itemQty').value) || 1;
+  if (qty <= 0) { toast('Quantity must be greater than zero', 'warn'); return; }
+  if (p.track !== false && qty > num(p.stock)) {
+    toast(`Only ${num(p.stock)} ${p.unit || 'unit'} of ${p.name} in stock`, 'error');
+    return;
+  }
+  const rate = $('#itemRate').value === '' ? num(p.price) : num($('#itemRate').value);
+  const disc = Math.max(0, Math.min(100, num($('#itemDisc').value)));
+  d.items.push({
+    productId: p.id, name: p.name, sku: p.sku || '', unit: p.unit || '', qty, rate, disc,
+    vat: p.vat !== false, vatRate: num(S().vatRate), cost: num(p.cost),
+  });
+  render();
+  setTimeout(() => { const q = $('#itemQty'); if (q) { q.value = 1; q.focus(); } }, 40);
+}
+
+function saveBill(autoPrint) {
+  const d = ensureDraft();
+  if (!d.items.length) { toast('Add at least one item to the bill', 'warn'); return; }
+  const bad = d.items.find((it) => num(it.qty) <= 0 || num(it.rate) < 0);
+  if (bad) { toast('Check quantity and rate of every item', 'warn'); return; }
+  const totals = billTotals(d);
+  const received = d.type === 'estimate' ? 0 : Math.max(0, num(d.received));
+  const partyName = (d.party.name || '').trim() || 'Walk-in Customer';
+  const inv = {
+    id: uid(),
+    no: nextInvoiceNo(d.date),
+    type: d.type,
+    date: d.date || todayISO(),
+    dueDate: d.dueDate || '',
+    partyId: d.partyId || '',
+    party: { ...d.party, name: partyName },
+    items: d.items.map((it) => {
+      const c = lineCalc(it, d.type, S().vatRate);
+      return {
+        productId: it.productId, name: it.name, sku: it.sku || '', unit: it.unit || '',
+        qty: num(it.qty), rate: num(it.rate), disc: num(it.disc), vat: it.vat !== false,
+        vatRate: c.vatRate, vatAmount: c.vatAmount, net: c.net, total: c.total, cost: num(it.cost),
+      };
+    }),
+    subtotal: totals.subtotal,
+    discount: totals.discount,
+    taxable: totals.taxable,
+    vat: totals.vat,
+    total: totals.total,
+    received: r2(received),
+    due: r2(Math.max(0, totals.total - received)),
+    change: r2(Math.max(0, received - totals.total)),
+    payment: d.payment,
+    note: (d.note || '').trim(),
+    status: '',
+    createdAt: new Date().toISOString(),
+  };
+  inv.status = invoiceStatus(inv);
+  if (d.type !== 'estimate') {
+    inv.items.forEach((it) => {
+      const p = DB.products.find((x) => x.id === it.productId);
+      if (p && p.track !== false) p.stock = r2(num(p.stock) - num(it.qty));
+    });
+  }
+  DB.invoices.unshift(inv);
+  DB.counters.invoice = (DB.counters.invoice || 0) + 1;
+  saveDB();
+  draft = null;
+  render();
+  openInvoicePreview(inv, autoPrint);
+  toast(`Invoice ${inv.no} saved`);
+}
+
+function openInvoicePreview(inv, autoPrint) {
+  if (!inv) return;
+  openModal({
+    title: `Invoice ${esc(inv.no)}`,
+    wide: true,
+    body: `<div class="preview-note">Print, save as PDF, or close. Use your browser's print dialog to choose a printer.</div><div class="invoice-preview">${invoiceTemplate(inv, 'a4')}</div>`,
+    footer: `
+      <button type="button" class="btn" data-act="print-invoice" data-id="${inv.id}" data-size="thermal">${ico('print')} Thermal 80mm</button>
+      <button type="button" class="btn primary" data-act="print-invoice" data-id="${inv.id}" data-size="a4">${ico('print')} Print A4</button>
+      <button type="button" class="btn ghost" data-act="close-modal">Close</button>`,
+  });
+  if (autoPrint) setTimeout(() => printInvoice(inv, 'a4'), 400);
+}
+
+function openPaymentModal(id) {
+  const inv = DB.invoices.find((i) => i.id === id);
+  if (!inv) return;
+  const due = r2(num(inv.total) - num(inv.received));
+  openModal({
+    title: `Record payment · ${esc(inv.no)}`,
+    body: `<form id="paymentForm">
+      <div class="pay-summary">
+        <div><span>Grand total</span><b>${money(inv.total)}</b></div>
+        <div><span>Already received</span><b>${money(inv.received)}</b></div>
+        <div><span>Balance due</span><b class="red-text">${money(due)}</b></div>
+      </div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Amount received now</label><input class="input" name="amount" type="number" min="0" step="any" value="${due > 0 ? due : 0}" required></div>
+        <div class="field"><label>Method</label><select class="input" name="method">${['Cash', 'Card', 'eSewa', 'Khalti', 'Bank Transfer', 'Other'].map((m) => `<option ${inv.payment === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+      </div>
+    </form>`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Cancel</button><button type="submit" form="paymentForm" class="btn primary">Save payment</button>`,
+  });
+  $('#paymentForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const amount = num(new FormData(e.target).get('amount'));
+    if (amount <= 0) { toast('Enter a payment amount', 'warn'); return; }
+    inv.received = r2(num(inv.received) + amount);
+    inv.due = r2(Math.max(0, num(inv.total) - inv.received));
+    inv.change = r2(Math.max(0, inv.received - num(inv.total)));
+    inv.payment = new FormData(e.target).get('method');
+    inv.status = invoiceStatus(inv);
+    saveDB();
+    closeModal();
+    render();
+    toast('Payment recorded');
+  });
+}
+
+function deleteInvoice(id) {
+  const inv = DB.invoices.find((i) => i.id === id);
+  if (!inv) return;
+  if (!confirm(`Delete invoice ${inv.no}? Stock will be restored for billed items.`)) return;
+  if (inv.type !== 'estimate') {
+    inv.items.forEach((it) => {
+      const p = DB.products.find((x) => x.id === it.productId);
+      if (p && p.track !== false) p.stock = r2(num(p.stock) + num(it.qty));
+    });
+  }
+  DB.invoices = DB.invoices.filter((i) => i.id !== id);
+  saveDB();
+  closeModal();
+  render();
+  toast('Invoice deleted');
+}
+
+/* ---------------- invoices ---------------- */
+function invoicesHTML() {
+  const list = DB.invoices.slice().sort((a, b) => (b.date + (b.createdAt || '')).localeCompare(a.date + (a.createdAt || '')));
+  return `
+    <div class="toolbar card">
+      <div class="toolbar-row">
+        <div class="search-box">${ico('search')}<input class="input" id="invSearch" placeholder="Search invoice no, customer, phone…"></div>
+        <select class="input" id="invType"><option value="">All types</option><option value="vat">VAT Bill</option><option value="pan">PAN Bill</option><option value="estimate">Estimate</option></select>
+        <select class="input" id="invStatus"><option value="">All status</option><option value="paid">Paid</option><option value="partial">Partial</option><option value="unpaid">Unpaid</option><option value="estimate">Estimate</option></select>
+        <button type="button" class="btn" data-act="export-sales">${ico('download')} Export CSV</button>
+        <button type="button" class="btn primary" data-act="new-bill">${ico('plus')} New bill</button>
+      </div>
+      <div class="muted" id="invCount">${list.length} invoice(s)</div>
+    </div>
+    <section class="card">
+      ${list.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Type</th><th class="r">Total</th><th class="r">Due</th><th>Status</th><th></th></tr></thead>
+        <tbody id="invRows">${list.map((inv) => {
+          const search = `${inv.no} ${inv.party?.name || ''} ${inv.party?.phone || ''} ${inv.party?.pan || ''} ${inv.party?.vat || ''}`.toLowerCase();
+          return `<tr data-search="${esc(search)}" data-type="${inv.type}" data-status="${inv.status}">
+            <td><strong>${esc(inv.no)}</strong><div class="sub">${esc(inv.payment || '')}</div></td>
+            <td>${formatDate(inv.date)}<div class="sub">${S().showBS ? bsShort(inv.date) + ' BS' : ''}</div></td>
+            <td>${esc(inv.party?.name || 'Walk-in Customer')}<div class="sub">${esc(inv.party?.phone || '')}</div></td>
+            <td>${typeBadge(inv.type)}</td>
+            <td class="r"><strong>${money(inv.total)}</strong><div class="sub">VAT ${money(inv.vat)}</div></td>
+            <td class="r ${num(inv.due) > 0 ? 'red-text' : ''}">${money(inv.due)}</td>
+            <td>${statusBadge(inv.status)}</td>
+            <td class="r actions">
+              <button type="button" class="btn sm" data-act="view-invoice" data-id="${inv.id}">View</button>
+              ${inv.type !== 'estimate' ? `<button type="button" class="btn sm" data-act="pay-invoice" data-id="${inv.id}">Pay</button>` : ''}
+              <button type="button" class="icon-btn danger" data-act="del-invoice" data-id="${inv.id}" title="Delete">${ico('trash')}</button>
+            </td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>` : `<div class="empty"><div class="big">${ico('receipt')}</div>No invoices yet. Create your first bill.</div>`}
+    </section>`;
+}
+
+function mountInvoices() {
+  const apply = () => {
+    const q = ($('#invSearch')?.value || '').trim().toLowerCase();
+    const type = $('#invType')?.value || '';
+    const status = $('#invStatus')?.value || '';
+    let shown = 0;
+    $$('#invRows tr').forEach((tr) => {
+      const ok = (!q || tr.dataset.search.includes(q)) && (!type || tr.dataset.type === type) && (!status || tr.dataset.status === status);
+      tr.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    const c = $('#invCount');
+    if (c) c.textContent = `${shown} invoice(s) shown`;
+  };
+  ['#invSearch', '#invType', '#invStatus'].forEach((sel) => {
+    const el = $(sel);
+    if (el) el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', apply);
+  });
+}
+
+/* ---------------- inventory ---------------- */
+function productRowsHTML() {
+  const products = DB.products.slice().sort((a, b) => a.name.localeCompare(b.name));
+  return products.map((p) => {
+    const low = isLowStock(p);
+    const status = p.track === false ? '<span class="badge gray">Service</span>' : num(p.stock) <= 0 ? '<span class="badge red">Out of stock</span>' : low ? '<span class="badge amber">Low stock</span>' : '<span class="badge green">In stock</span>';
+    const margin = num(p.price) > 0 ? ((num(p.price) - num(p.cost)) / num(p.price)) * 100 : 0;
+    const search = `${p.name} ${p.sku || ''} ${p.category || ''}`.toLowerCase();
+    return `<tr data-search="${esc(search)}" data-low="${low ? 1 : 0}" data-cat="${esc(p.category || '')}">
+      <td><strong>${esc(p.name)}</strong><div class="sub">${esc(p.sku || 'No SKU')}</div></td>
+      <td>${p.category ? `<span class="badge gray">${esc(p.category)}</span>` : '—'}</td>
+      <td class="r"><strong>${p.track === false ? '—' : num(p.stock)}</strong> <span class="sub">${esc(p.unit || '')}</span></td>
+      <td class="r">${money(p.cost)}</td>
+      <td class="r">${money(p.price)}</td>
+      <td class="r">${margin.toFixed(1)}%</td>
+      <td>${status}</td>
+      <td class="r actions">
+        <button type="button" class="btn sm" data-act="stock-in" data-id="${p.id}">Stock in</button>
+        <button type="button" class="btn sm" data-act="adjust-stock" data-id="${p.id}">Adjust</button>
+        <button type="button" class="icon-btn" data-act="edit-product" data-id="${p.id}" title="Edit">${ico('edit')}</button>
+        <button type="button" class="icon-btn" data-act="product-history" data-id="${p.id}" title="History">${ico('list')}</button>
+        <button type="button" class="icon-btn danger" data-act="del-product" data-id="${p.id}" title="Delete">${ico('trash')}</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function inventoryHTML() {
+  const cats = Array.from(new Set(DB.products.map((p) => p.category).filter(Boolean))).sort();
+  const lowCount = DB.products.filter(isLowStock).length;
+  const stockValue = DB.products.reduce((a, p) => a + (p.track === false ? 0 : num(p.stock) * num(p.cost)), 0);
+  return `
+    <div class="toolbar card">
+      <div class="toolbar-row">
+        <div class="search-box">${ico('search')}<input class="input" id="prodSearch" placeholder="Search product, SKU, category…"></div>
+        <select class="input" id="prodCat"><option value="">All categories</option>${cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
+        <label class="check"><input type="checkbox" id="prodLow"> Low stock only (${lowCount})</label>
+        <button type="button" class="btn" data-act="export-stock">${ico('download')} Export CSV</button>
+        <button type="button" class="btn primary" data-act="new-product">${ico('plus')} Add product</button>
+      </div>
+      <div class="muted"><span id="prodCount">${DB.products.length} product(s)</span> · Stock value at cost: <strong>${money(stockValue)}</strong></div>
+    </div>
+    <section class="card">
+      ${DB.products.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Product</th><th>Category</th><th class="r">Stock</th><th class="r">Cost</th><th class="r">Selling price</th><th class="r">Margin</th><th>Status</th><th></th></tr></thead>
+        <tbody id="prodRows">${productRowsHTML()}</tbody>
+      </table></div>` : `<div class="empty"><div class="big">${ico('box')}</div>No products yet. Add your first product to start billing.</div>`}
+    </section>`;
+}
+
+function mountInventory() {
+  const apply = () => {
+    const q = ($('#prodSearch')?.value || '').trim().toLowerCase();
+    const cat = $('#prodCat')?.value || '';
+    const low = $('#prodLow')?.checked;
+    let shown = 0;
+    $$('#prodRows tr').forEach((tr) => {
+      const ok = (!q || tr.dataset.search.includes(q)) && (!cat || tr.dataset.cat === cat) && (!low || tr.dataset.low === '1');
+      tr.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    const c = $('#prodCount');
+    if (c) c.textContent = `${shown} product(s)`;
+  };
+  ['#prodSearch', '#prodCat', '#prodLow'].forEach((sel) => {
+    const el = $(sel);
+    if (el) el.addEventListener(el.tagName === 'INPUT' && el.type !== 'checkbox' ? 'input' : 'change', apply);
+  });
+}
+
+function unitOptions(current) {
+  const units = ['pcs', 'kg', 'g', 'ltr', 'ml', 'pack', 'box', 'bag', 'plate', 'cup', 'ream', 'dozen', 'service', 'hour'];
+  return units.map((u) => `<option ${current === u ? 'selected' : ''}>${u}</option>`).join('') + `<option ${current && !units.includes(current) ? 'selected' : ''}>${current && !units.includes(current) ? esc(current) : ''}</option>`;
+}
+
+function openProductModal(id, forBill) {
+  const p = id ? DB.products.find((x) => x.id === id) : null;
+  const cats = Array.from(new Set(DB.products.map((x) => x.category).filter(Boolean)));
+  const data = p || { name: '', sku: '', category: '', unit: 'pcs', cost: 0, price: 0, stock: 0, lowStock: 5, vat: true, track: true };
+  openModal({
+    title: p ? 'Edit product' : 'Add product',
+    body: `<form id="productForm">
+      <div class="form-grid">
+        <div class="field span-2"><label>Product / service name *</label><input class="input" name="name" value="${esc(data.name)}" required placeholder="e.g. Basmati Rice 25kg"></div>
+        <div class="field"><label>SKU / code</label><input class="input" name="sku" value="${esc(data.sku)}" placeholder="Optional"></div>
+        <div class="field"><label>Category</label><input class="input" name="category" list="catList" value="${esc(data.category)}" placeholder="Grocery, Food…"><datalist id="catList">${cats.map((c) => `<option value="${esc(c)}">`).join('')}</datalist></div>
+        <div class="field"><label>Unit</label><select class="input" name="unit">${unitOptions(data.unit)}</select></div>
+        <div class="field"><label>Purchase cost</label><input class="input" name="cost" type="number" min="0" step="any" value="${num(data.cost)}"></div>
+        <div class="field"><label>Selling price</label><input class="input" name="price" type="number" min="0" step="any" value="${num(data.price)}"></div>
+        <div class="field"><label>Stock quantity</label><input class="input" name="stock" type="number" step="any" value="${num(data.stock)}"><small>Changes are logged as manual adjustment.</small></div>
+        <div class="field"><label>Low stock alert at</label><input class="input" name="lowStock" type="number" min="0" step="any" value="${num(data.lowStock)}"></div>
+        <div class="field"><label>Options</label>
+          <label class="check"><input type="checkbox" name="vat" ${data.vat !== false ? 'checked' : ''}> Apply VAT</label>
+          <label class="check"><input type="checkbox" name="track" ${data.track !== false ? 'checked' : ''}> Track stock</label>
+        </div>
+      </div>
+    </form>`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Cancel</button><button type="submit" form="productForm" class="btn primary">${p ? 'Save changes' : 'Add product'}</button>`,
+  });
+  $('#productForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    const name = String(fd.get('name') || '').trim();
+    if (!name) { toast('Product name is required', 'warn'); return; }
+    const payload = {
+      name,
+      sku: String(fd.get('sku') || '').trim(),
+      category: String(fd.get('category') || '').trim(),
+      unit: String(fd.get('unit') || 'pcs'),
+      cost: num(fd.get('cost')),
+      price: num(fd.get('price')),
+      stock: num(fd.get('stock')),
+      lowStock: num(fd.get('lowStock')),
+      vat: form.elements.vat.checked,
+      track: form.elements.track.checked,
+    };
+    if (p) {
+      const oldStock = num(p.stock);
+      Object.assign(p, payload);
+      if (num(payload.stock) !== oldStock) {
+        DB.adjustments.unshift({ id: uid(), date: todayISO(), productId: p.id, type: num(payload.stock) > oldStock ? 'in' : 'out', qty: Math.abs(num(payload.stock) - oldStock), reason: 'Manual correction', createdAt: new Date().toISOString() });
+      }
+      toast('Product updated');
+    } else {
+      const np = { id: uid(), ...payload, createdAt: new Date().toISOString() };
+      DB.products.push(np);
+      if (num(np.stock) > 0) DB.adjustments.unshift({ id: uid(), date: todayISO(), productId: np.id, type: 'in', qty: num(np.stock), reason: 'Opening stock', createdAt: new Date().toISOString() });
+      toast('Product added');
+    }
+    saveDB();
+    closeModal();
+    render();
+    if (forBill && currentPage !== 'billing') navigate('billing');
+  });
+}
+
+function openStockIn(id) {
+  const p = DB.products.find((x) => x.id === id);
+  if (!p) return;
+  openModal({
+    title: `Stock in · ${esc(p.name)}`,
+    body: `<form id="stockInForm">
+      <div class="pay-summary"><div><span>Current stock</span><b>${num(p.stock)} ${esc(p.unit || '')}</b></div><div><span>Purchase cost</span><b>${money(p.cost)}</b></div></div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Quantity received *</label><input class="input" name="qty" type="number" min="0.01" step="any" value="1" required></div>
+        <div class="field"><label>Cost per unit</label><input class="input" name="cost" type="number" min="0" step="any" value="${num(p.cost)}"><small>Leave as is to keep current cost.</small></div>
+        <div class="field span-2"><label>Note</label><input class="input" name="note" placeholder="e.g. Opening stock, return, correction"></div>
+      </div>
+      <div class="notice" style="margin-top:12px">For supplier purchases with VAT, use the Purchases page instead.</div>
+    </form>`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Cancel</button><button type="submit" form="stockInForm" class="btn primary">Add stock</button>`,
+  });
+  $('#stockInForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const qty = num(fd.get('qty'));
+    if (qty <= 0) { toast('Quantity must be greater than zero', 'warn'); return; }
+    p.stock = r2(num(p.stock) + qty);
+    if (num(fd.get('cost')) > 0) p.cost = num(fd.get('cost'));
+    DB.adjustments.unshift({ id: uid(), date: todayISO(), productId: p.id, type: 'in', qty, reason: String(fd.get('note') || '').trim() || 'Stock in', createdAt: new Date().toISOString() });
+    saveDB();
+    closeModal();
+    render();
+    toast(`Added ${qty} ${p.unit || ''} to ${p.name}`);
+  });
+}
+
+function openAdjust(id) {
+  const p = DB.products.find((x) => x.id === id);
+  if (!p) return;
+  openModal({
+    title: `Adjust stock · ${esc(p.name)}`,
+    body: `<form id="adjustForm">
+      <div class="pay-summary"><div><span>Current stock</span><b>${num(p.stock)} ${esc(p.unit || '')}</b></div></div>
+      <div class="form-grid" style="margin-top:14px">
+        <div class="field"><label>Adjustment type</label><select class="input" name="type"><option value="in">Add stock (+)</option><option value="out">Remove stock (−)</option></select></div>
+        <div class="field"><label>Quantity *</label><input class="input" name="qty" type="number" min="0.01" step="any" value="1" required></div>
+        <div class="field span-2"><label>Reason</label><input class="input" name="reason" placeholder="e.g. Damage, expiry, stock count correction" required></div>
+      </div>
+    </form>`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Cancel</button><button type="submit" form="adjustForm" class="btn primary">Apply adjustment</button>`,
+  });
+  $('#adjustForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const type = String(fd.get('type'));
+    const qty = num(fd.get('qty'));
+    if (qty <= 0) { toast('Quantity must be greater than zero', 'warn'); return; }
+    if (type === 'out' && qty > num(p.stock)) { toast(`Cannot remove more than ${num(p.stock)} ${p.unit || ''}`, 'error'); return; }
+    p.stock = r2(num(p.stock) + (type === 'in' ? qty : -qty));
+    DB.adjustments.unshift({ id: uid(), date: todayISO(), productId: p.id, type, qty, reason: String(fd.get('reason') || '').trim() || 'Stock adjustment', createdAt: new Date().toISOString() });
+    saveDB();
+    closeModal();
+    render();
+    toast('Stock adjusted');
+  });
+}
+
+function openProductHistory(id) {
+  const p = DB.products.find((x) => x.id === id);
+  if (!p) return;
+  const events = [];
+  DB.invoices.forEach((inv) => {
+    if (inv.type === 'estimate') return;
+    inv.items.forEach((it) => {
+      if (it.productId === id) events.push({ date: inv.date, kind: 'Sale', qty: -num(it.qty), ref: inv.no, who: inv.party?.name || 'Walk-in Customer' });
+    });
+  });
+  DB.purchases.forEach((pu) => {
+    pu.items.forEach((it) => {
+      if (it.productId === id) events.push({ date: pu.date, kind: 'Purchase', qty: num(it.qty), ref: pu.no, who: pu.party?.name || 'Supplier' });
+    });
+  });
+  DB.adjustments.filter((a) => a.productId === id).forEach((a) => {
+    events.push({ date: a.date, kind: a.type === 'in' ? 'Stock in' : 'Stock out', qty: a.type === 'in' ? num(a.qty) : -num(a.qty), ref: a.reason || 'Adjustment', who: '' });
+  });
+  events.sort((a, b) => b.date.localeCompare(a.date));
+  openModal({
+    title: `Stock history · ${esc(p.name)}`,
+    wide: true,
+    body: `<div class="pay-summary"><div><span>Current stock</span><b>${num(p.stock)} ${esc(p.unit || '')}</b></div><div><span>Purchase cost</span><b>${money(p.cost)}</b></div><div><span>Selling price</span><b>${money(p.price)}</b></div></div>
+      ${events.length ? `<div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Date</th><th>Type</th><th>Reference</th><th>Party / reason</th><th class="r">Qty</th></tr></thead><tbody>
+      ${events.map((ev) => `<tr><td>${formatDate(ev.date)}</td><td>${esc(ev.kind)}</td><td>${esc(ev.ref)}</td><td>${esc(ev.who)}</td><td class="r ${ev.qty < 0 ? 'red-text' : 'green-text'}"><strong>${ev.qty > 0 ? '+' : ''}${fmt(ev.qty)}</strong></td></tr>`).join('')}
+      </tbody></table></div>` : `<div class="empty">No stock movements recorded for this product.</div>`}`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Close</button>`,
+  });
+}
+
+function deleteProduct(id) {
+  const p = DB.products.find((x) => x.id === id);
+  if (!p) return;
+  if (!confirm(`Delete ${p.name}? Existing invoices keep their item details.`)) return;
+  DB.products = DB.products.filter((x) => x.id !== id);
+  saveDB();
+  render();
+  toast('Product deleted');
+}
+
+/* ---------------- purchases ---------------- */
+function purchaseFormHTML() {
+  const p = purchaseDraft;
+  const t = calcPurchase(p);
+  const suppliers = DB.parties.filter((x) => x.type === 'supplier');
+  const products = DB.products.slice().sort((a, b) => a.name.localeCompare(b.name));
+  return `
+  <div class="bill-layout">
+    <div class="stack">
+      <section class="card">
+        <div class="card-head"><div><h2>Purchase details</h2><p>Record stock bought from a supplier</p></div><span class="badge blue">${esc(nextPurchaseNo(p.date))}</span></div>
+        <div class="form-grid">
+          <div class="field span-2"><label>Supplier</label><select class="input" id="purParty">
+            <option value="">Cash / unregistered supplier</option>
+            ${suppliers.map((s) => `<option value="${s.id}" ${p.partyId === s.id ? 'selected' : ''}>${esc(s.name)}${s.phone ? ' · ' + esc(s.phone) : ''}</option>`).join('')}
+          </select></div>
+          <div class="field"><label>Date (AD)</label><input class="input" type="date" id="purDate" value="${esc(p.date)}"></div>
+          <div class="field"><label>Supplier bill no.</label><input class="input" id="purBillNo" value="${esc(p.supplierBillNo)}" placeholder="Optional"></div>
+          <div class="field"><label>VAT</label><label class="check"><input type="checkbox" id="purVat" ${p.vat ? 'checked' : ''}> Include VAT at ${num(S().vatRate)}%</label></div>
+          <div class="field span-2"><label>Note</label><input class="input" id="purNote" value="${esc(p.note)}" placeholder="Optional"></div>
+        </div>
+      </section>
+      <section class="card">
+        <div class="card-head"><div><h2>Items received</h2><p>Stock is added when you save</p></div><button type="button" class="btn sm" data-act="new-product">${ico('plus')} New product</button></div>
+        <div class="item-add">
+          <select class="input" id="purProduct"><option value="">Select product…</option>${products.map((x) => `<option value="${x.id}" data-cost="${num(x.cost)}">${esc(x.name)}${x.track !== false ? ` · ${num(x.stock)} ${esc(x.unit || '')} left` : ' · service'}</option>`).join('')}</select>
+          <input class="input" id="purQty" type="number" min="0.01" step="any" value="1" placeholder="Qty">
+          <input class="input" id="purRate" type="number" min="0" step="any" placeholder="Cost/unit">
+          <button type="button" class="btn primary" data-act="add-purchase-item">${ico('plus')} Add</button>
+        </div>
+        ${p.items.length ? `<div class="table-wrap"><table>
+          <thead><tr><th>#</th><th>Item</th><th class="r">Qty</th><th>Unit</th><th class="r">Cost</th><th class="r">Amount</th><th></th></tr></thead>
+          <tbody id="purItems">${p.items.map((it, i) => `<tr data-idx="${i}">
+            <td class="c">${i + 1}</td>
+            <td><strong>${esc(it.name)}</strong></td>
+            <td class="r"><input class="cell-input" data-idx="${i}" data-field="qty" type="number" min="0" step="any" value="${num(it.qty)}"></td>
+            <td>${esc(it.unit || '')}</td>
+            <td class="r"><input class="cell-input" data-idx="${i}" data-field="rate" type="number" min="0" step="any" value="${num(it.rate)}"></td>
+            <td class="r line-total"><strong>${money(num(it.qty) * num(it.rate))}</strong></td>
+            <td class="r"><button type="button" class="icon-btn danger" data-act="remove-purchase-item" data-idx="${i}">${ico('trash')}</button></td>
+          </tr>`).join('')}</tbody>
+        </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No items yet. Select a product and click Add.</div>`}
+      </section>
+    </div>
+    <aside class="stack">
+      <section class="card sticky">
+        <div class="card-head"><div><h2>Purchase summary</h2><p>${p.items.length} item(s)</p></div></div>
+        <div class="totals">
+          <div><span>Subtotal</span><b id="purSubtotal">${money(t.subtotal)}</b></div>
+          <div><span>VAT (${num(S().vatRate)}%)</span><b id="purVatTotal">${money(t.vat)}</b></div>
+          <div class="grand"><span>Total</span><b id="purTotal">${money(t.total)}</b></div>
+        </div>
+        <div class="summary-actions">
+          <button type="button" class="btn primary full" data-act="save-purchase">${ico('check')} Save purchase</button>
+          <button type="button" class="btn ghost full" data-act="cancel-purchase">Cancel</button>
+        </div>
+      </section>
+    </aside>
+  </div>`;
+}
+
+function purchasesListHTML() {
+  const list = DB.purchases.slice().sort((a, b) => (b.date + (b.createdAt || '')).localeCompare(a.date + (a.createdAt || '')));
+  const total = list.reduce((a, p) => a + num(p.total), 0);
+  return `
+    <div class="toolbar card">
+      <div class="toolbar-row">
+        <div class="search-box">${ico('search')}<input class="input" id="purSearch" placeholder="Search purchase no, supplier…"></div>
+        <button type="button" class="btn primary" data-act="new-purchase">${ico('plus')} New purchase</button>
+      </div>
+      <div class="muted"><span id="purCount">${list.length} purchase(s)</span> · Total purchases: <strong>${money(total)}</strong></div>
+    </div>
+    <section class="card">
+      ${list.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Purchase</th><th>Date</th><th>Supplier</th><th>Bill no.</th><th class="r">Subtotal</th><th class="r">VAT</th><th class="r">Total</th><th></th></tr></thead>
+        <tbody id="purRows">${list.map((p) => {
+          const search = `${p.no} ${p.party?.name || ''} ${p.supplierBillNo || ''}`.toLowerCase();
+          return `<tr data-search="${esc(search)}">
+            <td><strong>${esc(p.no)}</strong></td>
+            <td>${formatDate(p.date)}<div class="sub">${S().showBS ? bsShort(p.date) + ' BS' : ''}</div></td>
+            <td>${esc(p.party?.name || 'Cash supplier')}</td>
+            <td>${esc(p.supplierBillNo || '—')}</td>
+            <td class="r">${money(p.subtotal)}</td>
+            <td class="r">${money(p.vat)}</td>
+            <td class="r"><strong>${money(p.total)}</strong></td>
+            <td class="r actions"><button type="button" class="btn sm" data-act="view-purchase" data-id="${p.id}">View</button><button type="button" class="icon-btn danger" data-act="del-purchase" data-id="${p.id}">${ico('trash')}</button></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No purchases yet. Record stock you buy from suppliers.</div>`}
+    </section>`;
+}
+
+function purchasesHTML() { return purchaseDraft ? purchaseFormHTML() : purchasesListHTML(); }
+
+function mountPurchases() {
+  if (purchaseDraft) {
+    const p = purchaseDraft;
+    const partyEl = $('#purParty');
+    if (partyEl) partyEl.addEventListener('change', () => { p.partyId = partyEl.value; });
+    const dateEl = $('#purDate');
+    if (dateEl) dateEl.addEventListener('change', () => { p.date = dateEl.value || todayISO(); render(); });
+    const billEl = $('#purBillNo');
+    if (billEl) billEl.addEventListener('input', () => { p.supplierBillNo = billEl.value; });
+    const noteEl = $('#purNote');
+    if (noteEl) noteEl.addEventListener('input', () => { p.note = noteEl.value; });
+    const vatEl = $('#purVat');
+    if (vatEl) vatEl.addEventListener('change', () => { p.vat = vatEl.checked; updatePurchaseUI(); });
+    const prodEl = $('#purProduct');
+    if (prodEl) prodEl.addEventListener('change', () => {
+      const opt = prodEl.selectedOptions[0];
+      if (opt && opt.value) {
+        $('#purRate').value = opt.dataset.cost || '';
+        $('#purQty').value = 1;
+        $('#purQty').focus();
+      }
+    });
+    const body = $('#purItems');
+    if (body) body.addEventListener('input', (e) => {
+      const inp = e.target.closest('.cell-input');
+      if (!inp) return;
+      const i = Number(inp.dataset.idx);
+      if (!p.items[i]) return;
+      p.items[i][inp.dataset.field] = num(inp.value);
+      updatePurchaseUI();
+    });
+  } else {
+    const el = $('#purSearch');
+    if (el) el.addEventListener('input', () => {
+      const q = el.value.trim().toLowerCase();
+      let shown = 0;
+      $$('#purRows tr').forEach((tr) => {
+        const ok = !q || tr.dataset.search.includes(q);
+        tr.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      const c = $('#purCount');
+      if (c) c.textContent = `${shown} purchase(s)`;
+    });
+  }
+}
+
+function updatePurchaseUI() {
+  const p = purchaseDraft;
+  const t = calcPurchase(p);
+  const set = (sel, v) => { const el = $(sel); if (el) el.textContent = v; };
+  set('#purSubtotal', money(t.subtotal));
+  set('#purVatTotal', money(t.vat));
+  set('#purTotal', money(t.total));
+  $$('#purItems tr[data-idx]').forEach((tr) => {
+    const it = p.items[Number(tr.dataset.idx)];
+    if (!it) return;
+    const cell = tr.querySelector('.line-total');
+    if (cell) cell.innerHTML = `<strong>${money(num(it.qty) * num(it.rate))}</strong>`;
+  });
+}
+
+function addPurchaseItem() {
+  const p = purchaseDraft;
+  const sel = $('#purProduct');
+  const pid = sel ? sel.value : '';
+  if (!pid) { toast('Select a product first', 'warn'); return; }
+  const product = DB.products.find((x) => x.id === pid);
+  if (!product) return;
+  const qty = num($('#purQty').value) || 1;
+  if (qty <= 0) { toast('Quantity must be greater than zero', 'warn'); return; }
+  const rate = $('#purRate').value === '' ? num(product.cost) : num($('#purRate').value);
+  p.items.push({ productId: product.id, name: product.name, unit: product.unit || '', qty, rate });
+  render();
+  setTimeout(() => { const q = $('#purQty'); if (q) { q.value = 1; q.focus(); } }, 40);
+}
+
+function savePurchase() {
+  const p = purchaseDraft;
+  if (!p.items.length) { toast('Add at least one item', 'warn'); return; }
+  const bad = p.items.find((it) => num(it.qty) <= 0 || num(it.rate) < 0);
+  if (bad) { toast('Check quantity and cost of every item', 'warn'); return; }
+  const supplier = DB.parties.find((x) => x.id === p.partyId);
+  const t = calcPurchase(p);
+  const pu = {
+    id: uid(),
+    no: nextPurchaseNo(p.date),
+    date: p.date || todayISO(),
+    partyId: p.partyId || '',
+    party: supplier ? { name: supplier.name, phone: supplier.phone || '', address: supplier.address || '', pan: supplier.pan || '', vat: supplier.vat || '' } : { name: 'Cash supplier' },
+    supplierBillNo: (p.supplierBillNo || '').trim(),
+    items: p.items.map((it) => ({ ...it, qty: num(it.qty), rate: num(it.rate) })),
+    subtotal: t.subtotal,
+    vat: t.vat,
+    total: t.total,
+    note: (p.note || '').trim(),
+    createdAt: new Date().toISOString(),
+  };
+  pu.items.forEach((it) => {
+    const prod = DB.products.find((x) => x.id === it.productId);
+    if (!prod || prod.track === false) return;
+    const oldStock = num(prod.stock);
+    const oldCost = num(prod.cost);
+    const newStock = oldStock + num(it.qty);
+    if (num(it.rate) > 0) {
+      prod.cost = oldStock > 0 ? r2(((oldStock * oldCost) + (num(it.qty) * num(it.rate))) / newStock) : num(it.rate);
+    }
+    prod.stock = r2(newStock);
+  });
+  DB.purchases.unshift(pu);
+  DB.counters.purchase = (DB.counters.purchase || 0) + 1;
+  saveDB();
+  purchaseDraft = null;
+  render();
+  toast(`Purchase ${pu.no} saved · stock updated`);
+}
+
+function openPurchaseView(id) {
+  const p = DB.purchases.find((x) => x.id === id);
+  if (!p) return;
+  openModal({
+    title: `Purchase ${esc(p.no)}`,
+    wide: true,
+    body: `<div class="pay-summary">
+        <div><span>Date</span><b>${formatDate(p.date)}</b></div>
+        <div><span>Supplier</span><b>${esc(p.party?.name || 'Cash supplier')}</b></div>
+        <div><span>Bill no.</span><b>${esc(p.supplierBillNo || '—')}</b></div>
+      </div>
+      <div class="table-wrap" style="margin-top:14px"><table>
+        <thead><tr><th>#</th><th>Item</th><th class="r">Qty</th><th class="r">Cost</th><th class="r">Amount</th></tr></thead>
+        <tbody>${p.items.map((it, i) => `<tr><td>${i + 1}</td><td>${esc(it.name)}</td><td class="r">${fmt(it.qty)} ${esc(it.unit || '')}</td><td class="r">${money(it.rate)}</td><td class="r">${money(num(it.qty) * num(it.rate))}</td></tr>`).join('')}</tbody>
+      </table></div>
+      <div class="totals" style="margin-top:14px;max-width:320px;margin-left:auto">
+        <div><span>Subtotal</span><b>${money(p.subtotal)}</b></div>
+        <div><span>VAT</span><b>${money(p.vat)}</b></div>
+        <div class="grand"><span>Total</span><b>${money(p.total)}</b></div>
+      </div>
+      ${p.note ? `<div class="notice" style="margin-top:12px">${esc(p.note)}</div>` : ''}`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Close</button>`,
+  });
+}
+
+function deletePurchase(id) {
+  const p = DB.purchases.find((x) => x.id === id);
+  if (!p) return;
+  for (const it of p.items) {
+    const prod = DB.products.find((x) => x.id === it.productId);
+    if (prod && prod.track !== false && num(prod.stock) < num(it.qty)) {
+      toast(`Cannot delete: ${prod.name} stock has already been used`, 'error');
+      return;
+    }
+  }
+  if (!confirm(`Delete purchase ${p.no}? Stock added by this purchase will be removed.`)) return;
+  p.items.forEach((it) => {
+    const prod = DB.products.find((x) => x.id === it.productId);
+    if (prod && prod.track !== false) prod.stock = r2(num(prod.stock) - num(it.qty));
+  });
+  DB.purchases = DB.purchases.filter((x) => x.id !== id);
+  saveDB();
+  render();
+  toast('Purchase deleted');
+}
+
+/* ---------------- parties ---------------- */
+function partyTotal(p) {
+  if (p.type === 'customer') {
+    return DB.invoices.filter((i) => i.type !== 'estimate' && i.partyId === p.id).reduce((a, i) => a + num(i.total), 0);
+  }
+  return DB.purchases.filter((pu) => pu.partyId === p.id).reduce((a, pu) => a + num(pu.total), 0);
+}
+
+function partiesHTML() {
+  const tab = ui.partyTab;
+  const list = DB.parties.filter((p) => p.type === tab).sort((a, b) => a.name.localeCompare(b.name));
+  const count = { customer: DB.parties.filter((p) => p.type === 'customer').length, supplier: DB.parties.filter((p) => p.type === 'supplier').length };
+  return `
+    <div class="toolbar card">
+      <div class="toolbar-row">
+        <div class="segmented">
+          <button type="button" class="${tab === 'customer' ? 'active' : ''}" data-act="party-tab" data-id="customer">Customers (${count.customer})</button>
+          <button type="button" class="${tab === 'supplier' ? 'active' : ''}" data-act="party-tab" data-id="supplier">Suppliers (${count.supplier})</button>
+        </div>
+        <div class="search-box">${ico('search')}<input class="input" id="partySearch" placeholder="Search name, phone, PAN…"></div>
+        <button type="button" class="btn primary" data-act="new-party" data-type="${tab}">${ico('plus')} Add ${tab}</button>
+      </div>
+      <div class="muted"><span id="partyCount">${list.length} ${tab}(s)</span></div>
+    </div>
+    <section class="card">
+      ${list.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Phone</th><th>Address</th><th>PAN / VAT</th><th class="r">Total business</th><th></th></tr></thead>
+        <tbody id="partyRows">${list.map((p) => {
+          const search = `${p.name} ${p.phone || ''} ${p.pan || ''} ${p.vat || ''} ${p.address || ''}`.toLowerCase();
+          return `<tr data-search="${esc(search)}">
+            <td><strong>${esc(p.name)}</strong></td>
+            <td>${esc(p.phone || '—')}</td>
+            <td>${esc(p.address || '—')}</td>
+            <td>${esc(p.pan || p.vat || '—')}</td>
+            <td class="r"><strong>${money(partyTotal(p))}</strong></td>
+            <td class="r actions"><button type="button" class="icon-btn" data-act="edit-party" data-id="${p.id}">${ico('edit')}</button><button type="button" class="icon-btn danger" data-act="del-party" data-id="${p.id}">${ico('trash')}</button></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>` : `<div class="empty"><div class="big">${ico('users')}</div>No ${tab}s yet. Add one to speed up billing.</div>`}
+    </section>`;
+}
+
+function mountParties() {
+  const el = $('#partySearch');
+  if (el) el.addEventListener('input', () => {
+    const q = el.value.trim().toLowerCase();
+    let shown = 0;
+    $$('#partyRows tr').forEach((tr) => {
+      const ok = !q || tr.dataset.search.includes(q);
+      tr.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    const c = $('#partyCount');
+    if (c) c.textContent = `${shown} ${ui.partyTab}(s)`;
+  });
+}
+
+function openPartyModal(id, type, cb) {
+  const p = id ? DB.parties.find((x) => x.id === id) : null;
+  const data = p || { type: type || 'customer', name: '', phone: '', address: '', pan: '', vat: '' };
+  openModal({
+    title: p ? 'Edit contact' : `Add ${data.type}`,
+    body: `<form id="partyForm">
+      <div class="form-grid">
+        <div class="field"><label>Type</label><select class="input" name="type"><option value="customer" ${data.type === 'customer' ? 'selected' : ''}>Customer</option><option value="supplier" ${data.type === 'supplier' ? 'selected' : ''}>Supplier</option></select></div>
+        <div class="field"><label>Name *</label><input class="input" name="name" value="${esc(data.name)}" required placeholder="Full name / business name"></div>
+        <div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(data.phone)}" placeholder="98XXXXXXXX"></div>
+        <div class="field"><label>PAN No.</label><input class="input" name="pan" value="${esc(data.pan)}" placeholder="Optional"></div>
+        <div class="field"><label>VAT No.</label><input class="input" name="vat" value="${esc(data.vat)}" placeholder="Optional"></div>
+        <div class="field"><label>Address</label><input class="input" name="address" value="${esc(data.address)}" placeholder="City / area"></div>
+      </div>
+    </form>`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Cancel</button><button type="submit" form="partyForm" class="btn primary">Save</button>`,
+  });
+  $('#partyForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const name = String(fd.get('name') || '').trim();
+    if (!name) { toast('Name is required', 'warn'); return; }
+    const payload = {
+      type: String(fd.get('type') || 'customer'),
+      name,
+      phone: String(fd.get('phone') || '').trim(),
+      pan: String(fd.get('pan') || '').trim(),
+      vat: String(fd.get('vat') || '').trim(),
+      address: String(fd.get('address') || '').trim(),
+    };
+    let saved;
+    if (p) {
+      Object.assign(p, payload);
+      saved = p;
+      toast('Contact updated');
+    } else {
+      saved = { id: uid(), ...payload, createdAt: new Date().toISOString() };
+      DB.parties.push(saved);
+      toast(`${payload.type === 'customer' ? 'Customer' : 'Supplier'} added`);
+    }
+    saveDB();
+    closeModal();
+    render();
+    if (cb) cb(saved);
+  });
+}
+
+function deleteParty(id) {
+  const p = DB.parties.find((x) => x.id === id);
+  if (!p) return;
+  if (!confirm(`Delete ${p.name}? Existing invoices keep their details.`)) return;
+  DB.parties = DB.parties.filter((x) => x.id !== id);
+  saveDB();
+  render();
+  toast('Contact deleted');
+}
+
+/* ---------------- reports ---------------- */
+function reportData() {
+  const from = ui.report.from || monthStart(todayISO());
+  const to = ui.report.to || todayISO();
+  const invoices = DB.invoices.filter((i) => i.type !== 'estimate' && i.date >= from && i.date <= to).sort((a, b) => b.date.localeCompare(a.date));
+  const purchases = DB.purchases.filter((p) => p.date >= from && p.date <= to).sort((a, b) => b.date.localeCompare(a.date));
+  const salesTotal = invoices.reduce((a, i) => a + num(i.total), 0);
+  const salesTaxable = invoices.reduce((a, i) => a + num(i.taxable), 0);
+  const vatOut = invoices.reduce((a, i) => a + num(i.vat), 0);
+  const purchaseTotal = purchases.reduce((a, p) => a + num(p.total), 0);
+  const purchaseTaxable = purchases.reduce((a, p) => a + num(p.subtotal), 0);
+  const vatIn = purchases.reduce((a, p) => a + num(p.vat), 0);
+  let profit = 0;
+  invoices.forEach((inv) => inv.items.forEach((it) => { profit += itemNet(it, inv.type) - num(it.qty) * num(it.cost); }));
+  const stockValue = DB.products.reduce((a, p) => a + (p.track === false ? 0 : num(p.stock) * num(p.cost)), 0);
+  const retailValue = DB.products.reduce((a, p) => a + (p.track === false ? 0 : num(p.stock) * num(p.price)), 0);
+  const low = DB.products.filter(isLowStock);
+  const topMap = new Map();
+  invoices.forEach((inv) => inv.items.forEach((it) => {
+    const key = it.productId || it.name;
+    const row = topMap.get(key) || { name: it.name, qty: 0, amount: 0 };
+    row.qty += num(it.qty);
+    row.amount += itemNet(it, inv.type);
+    topMap.set(key, row);
+  }));
+  const top = Array.from(topMap.values()).sort((a, b) => b.amount - a.amount).slice(0, 10);
+  const dailyMap = new Map();
+  invoices.forEach((inv) => {
+    const row = dailyMap.get(inv.date) || { date: inv.date, count: 0, total: 0, vat: 0 };
+    row.count++;
+    row.total += num(inv.total);
+    row.vat += num(inv.vat);
+    dailyMap.set(inv.date, row);
+  });
+  const daily = Array.from(dailyMap.values()).sort((a, b) => b.date.localeCompare(a.date));
+  return { from, to, invoices, purchases, salesTotal, salesTaxable, vatOut, purchaseTotal, purchaseTaxable, vatIn, netVat: vatOut - vatIn, profit, stockValue, retailValue, low, top, daily };
+}
+
+function reportsHTML() {
+  const d = reportData();
+  const preset = (id, label) => `<button type="button" class="btn sm" data-act="report-preset" data-id="${id}">${label}</button>`;
+  return `
+    <div class="toolbar card">
+      <div class="toolbar-row">
+        <div class="field inline"><label>From</label><input class="input" type="date" id="repFrom" value="${esc(d.from)}"></div>
+        <div class="field inline"><label>To</label><input class="input" type="date" id="repTo" value="${esc(d.to)}"></div>
+        <div class="preset-row">${preset('today', 'Today')}${preset('week', '7 days')}${preset('month', 'This month')}${preset('fy', 'This FY')}${preset('all', 'All')}</div>
+      </div>
+      <div class="toolbar-row">
+        <span class="muted">Report period: <strong>${formatDate(d.from)}</strong> to <strong>${formatDate(d.to)}</strong>${S().showBS ? ` · ${bsShort(d.from)} – ${bsShort(d.to)} BS` : ''}</span>
+        <div class="spacer"></div>
+        <button type="button" class="btn sm" data-act="export-sales">${ico('download')} Sales CSV</button>
+        <button type="button" class="btn sm" data-act="export-vat">${ico('download')} VAT CSV</button>
+        <button type="button" class="btn sm" data-act="export-stock">${ico('download')} Stock CSV</button>
+        <button type="button" class="btn sm primary" data-act="print-report">${ico('print')} Print report</button>
+      </div>
+    </div>
+    <div class="stat-grid">
+      ${statCard('Sales', money(d.salesTotal), `${d.invoices.length} invoice(s)`, 'tone-blue')}
+      ${statCard('Output VAT', money(d.vatOut), 'Collected on sales', 'tone-green')}
+      ${statCard('Purchases', money(d.purchaseTotal), `${d.purchases.length} purchase(s)`, 'tone-violet')}
+      ${statCard('Input VAT', money(d.vatIn), 'Paid on purchases', 'tone-amber')}
+    </div>
+    <div class="grid-2">
+      <section class="card">
+        <div class="card-head"><div><h2>VAT position</h2><p>Output VAT minus input VAT for the period</p></div></div>
+        <div class="totals big-totals">
+          <div><span>Output VAT (sales)</span><b>${money(d.vatOut)}</b></div>
+          <div><span>Input VAT (purchases)</span><b>${money(d.vatIn)}</b></div>
+          <div class="grand"><span>Net VAT ${d.netVat >= 0 ? 'payable' : 'credit'}</span><b class="${d.netVat >= 0 ? 'red-text' : 'green-text'}">${money(Math.abs(d.netVat))}</b></div>
+        </div>
+        <div class="notice" style="margin-top:12px">This report is a working aid. Confirm your VAT return with your accountant and the IRD portal.</div>
+      </section>
+      <section class="card">
+        <div class="card-head"><div><h2>Profit &amp; stock</h2><p>Estimated gross profit for the period</p></div></div>
+        <div class="totals big-totals">
+          <div><span>Taxable sales</span><b>${money(d.salesTaxable)}</b></div>
+          <div><span>Gross profit (est.)</span><b class="${d.profit >= 0 ? 'green-text' : 'red-text'}">${money(d.profit)}</b></div>
+          <div><span>Stock value at cost</span><b>${money(d.stockValue)}</b></div>
+          <div><span>Stock value at retail</span><b>${money(d.retailValue)}</b></div>
+        </div>
+        <div class="muted" style="margin-top:10px">${d.low.length} product(s) at or below the low-stock alert.</div>
+      </section>
+    </div>
+    <div class="grid-2" style="margin-top:16px">
+      <section class="card">
+        <div class="card-head"><div><h2>Output VAT · sales</h2><p>VAT invoices in this period</p></div></div>
+        ${d.invoices.filter((i) => i.type === 'vat').length ? `<div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th class="r">Taxable</th><th class="r">VAT</th><th class="r">Total</th></tr></thead><tbody>
+          ${d.invoices.filter((i) => i.type === 'vat').map((i) => `<tr><td>${esc(i.no)}</td><td>${formatDate(i.date)}</td><td>${esc(i.party?.name || 'Walk-in')}</td><td class="r">${money(i.taxable)}</td><td class="r">${money(i.vat)}</td><td class="r">${money(i.total)}</td></tr>`).join('')}
+        </tbody></table></div>` : `<div class="empty">No VAT invoices in this period.</div>`}
+      </section>
+      <section class="card">
+        <div class="card-head"><div><h2>Input VAT · purchases</h2><p>Purchases with VAT in this period</p></div></div>
+        ${d.purchases.filter((p) => num(p.vat) > 0).length ? `<div class="table-wrap"><table><thead><tr><th>Purchase</th><th>Date</th><th>Supplier</th><th class="r">Taxable</th><th class="r">VAT</th><th class="r">Total</th></tr></thead><tbody>
+          ${d.purchases.filter((p) => num(p.vat) > 0).map((p) => `<tr><td>${esc(p.no)}</td><td>${formatDate(p.date)}</td><td>${esc(p.party?.name || 'Cash supplier')}</td><td class="r">${money(p.subtotal)}</td><td class="r">${money(p.vat)}</td><td class="r">${money(p.total)}</td></tr>`).join('')}
+        </tbody></table></div>` : `<div class="empty">No VAT purchases in this period.</div>`}
+      </section>
+    </div>
+    <div class="grid-2" style="margin-top:16px">
+      <section class="card">
+        <div class="card-head"><div><h2>Top products</h2><p>By sales value in this period</p></div></div>
+        ${d.top.length ? `<div class="table-wrap"><table><thead><tr><th>Product</th><th class="r">Qty sold</th><th class="r">Sales (excl. VAT)</th></tr></thead><tbody>${d.top.map((t) => `<tr><td>${esc(t.name)}</td><td class="r">${fmt(t.qty)}</td><td class="r">${money(t.amount)}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">No sales in this period.</div>`}
+      </section>
+      <section class="card">
+        <div class="card-head"><div><h2>Sales by day</h2><p>Daily totals in this period</p></div></div>
+        ${d.daily.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th class="r">Invoices</th><th class="r">VAT</th><th class="r">Total</th></tr></thead><tbody>${d.daily.map((x) => `<tr><td>${formatDate(x.date)}<div class="sub">${S().showBS ? bsShort(x.date) + ' BS' : ''}</div></td><td class="r">${x.count}</td><td class="r">${money(x.vat)}</td><td class="r"><strong>${money(x.total)}</strong></td></tr>`).join('')}</tbody></table></div>` : `<div class="empty">No sales in this period.</div>`}
+      </section>
+    </div>`;
+}
+
+function mountReports() {
+  ['#repFrom', '#repTo'].forEach((sel) => {
+    const el = $(sel);
+    if (el) el.addEventListener('change', () => {
+      ui.report.from = $('#repFrom').value || monthStart(todayISO());
+      ui.report.to = $('#repTo').value || todayISO();
+      if (ui.report.from > ui.report.to) { const t = ui.report.from; ui.report.from = ui.report.to; ui.report.to = t; }
+      render();
+    });
+  });
+}
+
+function setReportPreset(preset) {
+  const t = todayISO();
+  if (preset === 'today') ui.report = { from: t, to: t };
+  else if (preset === 'week') ui.report = { from: addDays(t, -6), to: t };
+  else if (preset === 'month') ui.report = { from: monthStart(t), to: t };
+  else if (preset === 'fy') {
+    const bs = adToBs(t);
+    const fy = bs ? (bs.month >= 3 ? bs.year : bs.year - 1) : new Date().getFullYear();
+    const start = bsToAd(fy, 3, 1) || `${new Date().getFullYear()}-01-01`;
+    ui.report = { from: start, to: t };
+  } else if (preset === 'all') {
+    const dates = [...DB.invoices.map((i) => i.date), ...DB.purchases.map((p) => p.date)].filter(Boolean).sort();
+    ui.report = { from: dates[0] || '2000-01-01', to: t };
+  }
+  render();
+}
+
+/* ---------------- settings ---------------- */
+function settingsHTML() {
+  const s = S();
+  return `
+    <div class="grid-2">
+      <section class="card">
+        <div class="card-head"><div><h2>Business profile</h2><p>Shown on every invoice</p></div></div>
+        <form id="settingsForm">
+          <div class="logo-row">
+            <div class="logo-preview">${s.logo ? `<img src="${esc(s.logo)}" alt="logo">` : '<span>Logo</span>'}</div>
+            <div class="logo-actions">
+              <input type="file" id="logoInput" accept="image/png,image/jpeg,image/webp">
+              <div class="muted">PNG/JPG, resized automatically. Stored on this device.</div>
+              ${s.logo ? `<button type="button" class="btn sm danger" data-act="remove-logo">Remove logo</button>` : ''}
+            </div>
+          </div>
+          <div class="form-grid" style="margin-top:16px">
+            <div class="field span-2"><label>Business name *</label><input class="input" name="businessName" value="${esc(s.businessName)}" required></div>
+            <div class="field span-2"><label>Tagline</label><input class="input" name="tagline" value="${esc(s.tagline)}" placeholder="e.g. Kirana & General Store"></div>
+            <div class="field span-2"><label>Address</label><input class="input" name="address" value="${esc(s.address)}" placeholder="Street, city, district"></div>
+            <div class="field"><label>Phone</label><input class="input" name="phone" value="${esc(s.phone)}"></div>
+            <div class="field"><label>Email</label><input class="input" name="email" value="${esc(s.email)}"></div>
+            <div class="field"><label>PAN No.</label><input class="input" name="panNo" value="${esc(s.panNo)}"></div>
+            <div class="field"><label>VAT No.</label><input class="input" name="vatNo" value="${esc(s.vatNo)}"></div>
+            <div class="field"><label>Invoice prefix</label><input class="input" name="invoicePrefix" value="${esc(s.invoicePrefix)}" placeholder="INV"></div>
+            <div class="field"><label>VAT rate (%)</label><input class="input" name="vatRate" type="number" min="0" max="100" step="any" value="${num(s.vatRate)}"></div>
+            <div class="field"><label>Currency symbol</label><input class="input" name="currency" value="${esc(s.currency)}" placeholder="Rs."></div>
+            <div class="field"><label>Default print size</label><select class="input" name="printSize"><option value="a4" ${s.printSize === 'a4' ? 'selected' : ''}>A4 invoice</option><option value="thermal" ${s.printSize === 'thermal' ? 'selected' : ''}>Thermal 80mm</option></select></div>
+            <div class="field span-2"><label>Bank / payment details</label><input class="input" name="bankDetails" value="${esc(s.bankDetails)}" placeholder="e.g. eSewa: 98XXXXXXXX, Bank: ..."></div>
+            <div class="field span-2"><label>Terms &amp; conditions</label><textarea class="input" name="terms" rows="2">${esc(s.terms)}</textarea></div>
+            <div class="field span-2"><label>Footer note</label><input class="input" name="footerNote" value="${esc(s.footerNote)}"></div>
+            <div class="field span-2"><label class="check"><input type="checkbox" name="showBS" ${s.showBS ? 'checked' : ''}> Show Bikram Sambat (BS) dates on invoices</label></div>
+          </div>
+          <div class="form-actions"><button type="submit" class="btn primary">${ico('check')} Save settings</button></div>
+        </form>
+      </section>
+      <div class="stack">
+        <section class="card">
+          <div class="card-head"><div><h2>Backup &amp; restore</h2><p>Keep a copy of your data</p></div></div>
+          <p class="muted">Everything is stored in this browser only. Export a backup regularly, especially before clearing browser data or changing computers.</p>
+          <div class="stack-buttons">
+            <button type="button" class="btn" data-act="export-backup">${ico('download')} Export backup (.json)</button>
+            <button type="button" class="btn" data-act="import-backup">${ico('upload')} Import backup</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden>
+            <button type="button" class="btn" data-act="load-demo">${ico('file')} Load demo data</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-head"><div><h2>Danger zone</h2><p>These actions cannot be undone</p></div></div>
+          <button type="button" class="btn danger full" data-act="reset-all">${ico('trash')} Erase all data</button>
+          <p class="muted" style="margin-top:10px">This removes products, invoices, purchases, customers and settings from this browser.</p>
+        </section>
+        <section class="card">
+          <div class="card-head"><div><h2>About</h2><p>Free &amp; open source</p></div></div>
+          <p class="muted">Offline Billing Nepal is a free, MIT-licensed billing app for Nepali shops, hotels, offices and companies. It works without internet, keeps data on your device, and supports VAT and PAN bills.</p>
+          <div class="muted">Version 1.0 · Data schema v${DB.version}</div>
+        </section>
+      </div>
+    </div>`;
+}
+
+function mountSettings() {
+  const form = $('#settingsForm');
+  if (form) form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const s = S();
+    s.businessName = String(fd.get('businessName') || '').trim() || 'My Business';
+    s.tagline = String(fd.get('tagline') || '').trim();
+    s.address = String(fd.get('address') || '').trim();
+    s.phone = String(fd.get('phone') || '').trim();
+    s.email = String(fd.get('email') || '').trim();
+    s.panNo = String(fd.get('panNo') || '').trim();
+    s.vatNo = String(fd.get('vatNo') || '').trim();
+    s.invoicePrefix = String(fd.get('invoicePrefix') || '').trim() || 'INV';
+    s.vatRate = Math.max(0, Math.min(100, num(fd.get('vatRate'))));
+    s.currency = String(fd.get('currency') || 'Rs.').trim() || 'Rs.';
+    s.printSize = String(fd.get('printSize') || 'a4');
+    s.bankDetails = String(fd.get('bankDetails') || '').trim();
+    s.terms = String(fd.get('terms') || '').trim();
+    s.footerNote = String(fd.get('footerNote') || '').trim();
+    s.showBS = form.elements.showBS.checked;
+    saveDB();
+    render();
+    toast('Settings saved');
+  });
+  const logoInput = $('#logoInput');
+  if (logoInput) logoInput.addEventListener('change', () => {
+    const file = logoInput.files && logoInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('Choose an image file', 'warn'); return; }
+    resizeImage(file, 360, (dataUrl) => {
+      S().logo = dataUrl;
+      saveDB();
+      render();
+      toast('Logo updated');
+    });
+  });
+  const importFile = $('#importFile');
+  if (importFile) importFile.addEventListener('change', handleImportFile);
+}
+
+function resizeImage(file, maxSize, cb) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const scale = Math.min(1, maxSize / Math.max(w, h));
+      w = Math.round(w * scale); h = Math.round(h * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => toast('Could not read that image', 'error');
+    img.src = reader.result;
+  };
+  reader.onerror = () => toast('Could not read that file', 'error');
+  reader.readAsDataURL(file);
+}
+
+function exportBackup() {
+  const data = { ...DB, exportedAt: new Date().toISOString(), app: 'Offline Billing Nepal' };
+  download(`billing-backup-${todayISO()}.json`, JSON.stringify(data, null, 2), 'application/json');
+  toast('Backup downloaded');
+}
+
+function handleImportFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || typeof data !== 'object' || !Array.isArray(data.products) || !Array.isArray(data.invoices)) throw new Error('Not a valid backup');
+      if (!confirm('Replace all current data with this backup?')) return;
+      DB = migrate(data);
+      saveDB();
+      draft = null;
+      purchaseDraft = null;
+      render();
+      toast('Backup restored');
+    } catch (err) {
+      console.error(err);
+      toast('Invalid backup file', 'error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetAll() {
+  if (!confirm('Erase ALL products, invoices, purchases, customers and settings?')) return;
+  if (!confirm('This cannot be undone. Are you absolutely sure?')) return;
+  DB = blankDB();
+  saveDB();
+  draft = null;
+  purchaseDraft = null;
+  currentPage = 'dashboard';
+  render();
+  toast('All data erased');
+}
+
+/* ---------------- invoice / report templates ---------------- */
+function invoiceTemplate(inv, size) {
+  if (!inv) return '';
+  if (size === 'thermal') return thermalTemplate(inv);
+  const s = S();
+  const bs = adToBs(inv.date);
+  const isVat = inv.type === 'vat';
+  const party = inv.party || {};
+  const pan = party.pan || party.vat || '';
+  const logo = s.logo ? `<img class="inv-logo" src="${esc(s.logo)}" alt="">` : '';
+  const rows = inv.items.map((it, i) => {
+    const c = lineCalc(it, inv.type, s.vatRate);
+    const net = it.net !== undefined ? num(it.net) : c.net;
+    const vatAmt = it.vatAmount !== undefined ? num(it.vatAmount) : c.vatAmount;
+    return `<tr>
+      <td class="c">${i + 1}</td>
+      <td><div class="inv-item-name">${esc(it.name)}</div>${it.sku ? `<div class="inv-sub">${esc(it.sku)}</div>` : ''}</td>
+      <td class="r">${fmt(it.qty)}</td>
+      <td class="c">${esc(it.unit || '')}</td>
+      <td class="r">${fmt(it.rate)}</td>
+      <td class="r">${num(it.disc) ? num(it.disc) + '%' : '—'}</td>
+      <td class="r">${fmt(net)}</td>
+      ${isVat ? `<td class="r">${fmt(vatAmt)}</td>` : ''}
+    </tr>`;
+  }).join('');
+  return `<div class="inv-sheet a4">
+    <div class="inv-head">
+      <div class="inv-brand">
+        ${logo}
+        <div>
+          <div class="inv-biz">${esc(s.businessName || 'My Business')}</div>
+          ${s.tagline ? `<div class="inv-tag">${esc(s.tagline)}</div>` : ''}
+          <div class="inv-meta">${s.address ? esc(s.address) + '<br>' : ''}${s.phone ? 'Phone: ' + esc(s.phone) : ''}${s.email ? ' · ' + esc(s.email) : ''}</div>
+          <div class="inv-meta">${s.panNo ? 'PAN No: ' + esc(s.panNo) : ''}${s.panNo && s.vatNo ? ' · ' : ''}${s.vatNo ? 'VAT No: ' + esc(s.vatNo) : ''}</div>
+        </div>
+      </div>
+      <div class="inv-title">
+        <div class="inv-type">${inv.type === 'vat' ? 'TAX INVOICE' : inv.type === 'pan' ? 'PAN INVOICE' : 'ESTIMATE'}</div>
+        <div class="inv-no">${esc(inv.no)}</div>
+        <div class="inv-meta">${inv.type === 'estimate' ? 'Quotation only' : 'Original for buyer'}</div>
+      </div>
+    </div>
+    <hr class="inv-rule">
+    <div class="inv-parties">
+      <div>
+        <div class="inv-label">Bill to</div>
+        <div class="inv-party-name">${esc(party.name || 'Walk-in Customer')}</div>
+        <div class="inv-meta">${party.address ? esc(party.address) + '<br>' : ''}${party.phone ? 'Phone: ' + esc(party.phone) + '<br>' : ''}${pan ? 'PAN/VAT No: ' + esc(pan) : ''}</div>
+      </div>
+      <div>
+        <div class="inv-label">Invoice details</div>
+        <table class="inv-meta-table">
+          <tr><td>Invoice date</td><td>${formatDate(inv.date)}</td></tr>
+          ${s.showBS && bs ? `<tr><td>BS date</td><td>${bs.year}-${pad2(bs.month + 1)}-${pad2(bs.day)}</td></tr>` : ''}
+          ${inv.dueDate ? `<tr><td>Due date</td><td>${formatDate(inv.dueDate)}</td></tr>` : ''}
+          <tr><td>Payment</td><td>${esc(inv.payment || '—')}</td></tr>
+          <tr><td>Fiscal year</td><td>${esc(fiscalYear(inv.date))}</td></tr>
+        </table>
+      </div>
+    </div>
+    <table class="inv-table">
+      <thead><tr>
+        <th class="c" style="width:6%">SN</th>
+        <th>Description</th>
+        <th class="r" style="width:9%">Qty</th>
+        <th class="c" style="width:8%">Unit</th>
+        <th class="r" style="width:12%">Rate</th>
+        <th class="r" style="width:9%">Disc.</th>
+        <th class="r" style="width:14%">Amount</th>
+        ${isVat ? '<th class="r" style="width:12%">VAT</th>' : ''}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="inv-totals">
+      <div class="row"><span>Subtotal</span><span>${money(inv.subtotal)}</span></div>
+      ${num(inv.discount) ? `<div class="row"><span>Discount</span><span>− ${money(inv.discount)}</span></div>` : ''}
+      <div class="row"><span>Taxable amount</span><span>${money(inv.taxable)}</span></div>
+      ${isVat ? `<div class="row"><span>VAT (${num(inv.items[0]?.vatRate ?? s.vatRate)}%)</span><span>${money(inv.vat)}</span></div>` : ''}
+      <div class="row grand"><span>Grand total</span><span>${money(inv.total)}</span></div>
+      <div class="row"><span>Amount received</span><span>${money(inv.received)}</span></div>
+      <div class="row"><span>Balance due</span><span>${money(inv.due)}</span></div>
+    </div>
+    <div class="inv-words"><strong>Amount in words:</strong> ${esc(amountInWords(inv.total))}</div>
+    ${inv.note ? `<div class="inv-note-box"><strong>Note:</strong> ${esc(inv.note)}</div>` : ''}
+    <div class="inv-foot">
+      <div>
+        ${s.terms ? `<div class="inv-label">Terms &amp; conditions</div><div class="inv-meta">${esc(s.terms)}</div>` : ''}
+        ${s.bankDetails ? `<div class="inv-label" style="margin-top:6px">Payment details</div><div class="inv-meta">${esc(s.bankDetails)}</div>` : ''}
+      </div>
+      <div>
+        <div class="inv-sign">Authorised signature</div>
+      </div>
+    </div>
+    <div class="inv-note">${esc(s.footerNote || 'Thank you for your business!')} · This is a computer generated ${inv.type === 'estimate' ? 'estimate' : 'invoice'}.</div>
+  </div>`;
+}
+
+function thermalTemplate(inv) {
+  const s = S();
+  const isVat = inv.type === 'vat';
+  const party = inv.party || {};
+  const pan = party.pan || party.vat || '';
+  const rows = inv.items.map((it) => {
+    const c = lineCalc(it, inv.type, s.vatRate);
+    const net = it.net !== undefined ? num(it.net) : c.net;
+    const vatAmt = it.vatAmount !== undefined ? num(it.vatAmount) : c.vatAmount;
+    return `<div class="t-item">
+      <div class="t-name">${esc(it.name)}</div>
+      <div class="t-row"><span>${fmt(it.qty)} ${esc(it.unit || '')} × ${fmt(it.rate)}</span><span>${fmt(net + vatAmt)}</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="inv-sheet thermal">
+    <div class="t-center">
+      ${s.logo ? `<img src="${esc(s.logo)}" style="max-width:52px;max-height:52px;object-fit:contain"><br>` : ''}
+      <div class="t-biz">${esc(s.businessName || 'My Business')}</div>
+      <div>${esc(s.address || '')}</div>
+      <div>${s.phone ? 'Tel: ' + esc(s.phone) : ''}</div>
+      <div>${s.panNo ? 'PAN: ' + esc(s.panNo) : ''}${s.vatNo ? ' · VAT: ' + esc(s.vatNo) : ''}</div>
+    </div>
+    <div class="t-rule"></div>
+    <div class="t-row"><strong>${inv.type === 'vat' ? 'TAX INVOICE' : inv.type === 'pan' ? 'PAN INVOICE' : 'ESTIMATE'}</strong><span>${esc(inv.no)}</span></div>
+    <div class="t-row"><span>${formatDate(inv.date)}</span><span>${s.showBS ? bsShort(inv.date) + ' BS' : ''}</span></div>
+    <div>Customer: ${esc(party.name || 'Walk-in Customer')}</div>
+    ${pan ? `<div>PAN/VAT: ${esc(pan)}</div>` : ''}
+    <div class="t-rule"></div>
+    ${rows}
+    <div class="t-rule"></div>
+    <div class="t-row"><span>Subtotal</span><span>${fmt(inv.subtotal)}</span></div>
+    ${num(inv.discount) ? `<div class="t-row"><span>Discount</span><span>−${fmt(inv.discount)}</span></div>` : ''}
+    ${isVat ? `<div class="t-row"><span>VAT</span><span>${fmt(inv.vat)}</span></div>` : ''}
+    <div class="t-row t-total"><span>TOTAL</span><span>${money(inv.total)}</span></div>
+    <div class="t-row"><span>Received</span><span>${fmt(inv.received)}</span></div>
+    <div class="t-row"><span>Due</span><span>${fmt(inv.due)}</span></div>
+    <div class="t-rule"></div>
+    <div class="t-center">${esc(s.footerNote || 'Thank you!')}</div>
+    <div class="t-center">${esc(s.terms || '')}</div>
+  </div>`;
+}
+
+function printInvoice(inv, size) {
+  if (!inv) return;
+  const printSize = size || S().printSize || 'a4';
+  const style = $('#printPageStyle');
+  if (style) style.textContent = printSize === 'thermal' ? '@page{size:80mm auto;margin:2mm}' : '@page{size:A4;margin:10mm}';
+  $('#printRoot').innerHTML = invoiceTemplate(inv, printSize);
+  document.body.classList.add('printing');
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing'), 400);
+  }, 100);
+}
+
+function reportTemplate(d) {
+  const s = S();
+  return `<div class="rep-sheet">
+    <div class="rep-head">
+      <div>
+        <div class="rep-biz">${esc(s.businessName || 'My Business')}</div>
+        <div class="rep-meta">${esc(s.address || '')}${s.phone ? ' · ' + esc(s.phone) : ''}</div>
+        <div class="rep-meta">${s.panNo ? 'PAN: ' + esc(s.panNo) : ''}${s.vatNo ? ' · VAT: ' + esc(s.vatNo) : ''}</div>
+      </div>
+      <div class="rep-title"><div class="rep-type">SALES &amp; VAT REPORT</div><div>${formatDate(d.from)} – ${formatDate(d.to)}</div>${s.showBS ? `<div>${bsShort(d.from)} – ${bsShort(d.to)} BS</div>` : ''}</div>
+    </div>
+    <hr>
+    <table class="rep-table">
+      <tr><th>Summary</th><th class="r">Amount</th></tr>
+      <tr><td>Sales (including VAT)</td><td class="r">${money(d.salesTotal)}</td></tr>
+      <tr><td>Taxable sales</td><td class="r">${money(d.salesTaxable)}</td></tr>
+      <tr><td>Output VAT collected</td><td class="r">${money(d.vatOut)}</td></tr>
+      <tr><td>Purchases (including VAT)</td><td class="r">${money(d.purchaseTotal)}</td></tr>
+      <tr><td>Input VAT paid</td><td class="r">${money(d.vatIn)}</td></tr>
+      <tr><td><strong>Net VAT ${d.netVat >= 0 ? 'payable' : 'credit'}</strong></td><td class="r"><strong>${money(Math.abs(d.netVat))}</strong></td></tr>
+      <tr><td>Estimated gross profit</td><td class="r">${money(d.profit)}</td></tr>
+      <tr><td>Stock value at cost</td><td class="r">${money(d.stockValue)}</td></tr>
+    </table>
+    <h3>Output VAT · sales</h3>
+    <table class="rep-table"><thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th class="r">Taxable</th><th class="r">VAT</th><th class="r">Total</th></tr></thead><tbody>
+      ${d.invoices.filter((i) => i.type === 'vat').map((i) => `<tr><td>${esc(i.no)}</td><td>${formatDate(i.date)}</td><td>${esc(i.party?.name || 'Walk-in')}</td><td class="r">${money(i.taxable)}</td><td class="r">${money(i.vat)}</td><td class="r">${money(i.total)}</td></tr>`).join('') || '<tr><td colspan="6">No VAT sales.</td></tr>'}
+    </tbody></table>
+    <h3>Input VAT · purchases</h3>
+    <table class="rep-table"><thead><tr><th>Purchase</th><th>Date</th><th>Supplier</th><th class="r">Taxable</th><th class="r">VAT</th><th class="r">Total</th></tr></thead><tbody>
+      ${d.purchases.filter((p) => num(p.vat) > 0).map((p) => `<tr><td>${esc(p.no)}</td><td>${formatDate(p.date)}</td><td>${esc(p.party?.name || 'Cash supplier')}</td><td class="r">${money(p.subtotal)}</td><td class="r">${money(p.vat)}</td><td class="r">${money(p.total)}</td></tr>`).join('') || '<tr><td colspan="6">No VAT purchases.</td></tr>'}
+    </tbody></table>
+    <h3>Top products</h3>
+    <table class="rep-table"><thead><tr><th>Product</th><th class="r">Qty sold</th><th class="r">Sales (excl. VAT)</th></tr></thead><tbody>
+      ${d.top.map((t) => `<tr><td>${esc(t.name)}</td><td class="r">${fmt(t.qty)}</td><td class="r">${money(t.amount)}</td></tr>`).join('') || '<tr><td colspan="3">No sales.</td></tr>'}
+    </tbody></table>
+    <div class="rep-foot">Generated on ${formatDate(todayISO())} · Offline Billing Nepal. This report is a working aid; verify VAT figures before filing.</div>
+  </div>`;
+}
+
+function printReport() {
+  const d = reportData();
+  if (!d.invoices.length && !d.purchases.length) { toast('No data in this period', 'warn'); return; }
+  const style = $('#printPageStyle');
+  if (style) style.textContent = '@page{size:A4;margin:10mm}';
+  $('#printRoot').innerHTML = reportTemplate(d);
+  document.body.classList.add('printing');
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing'), 400);
+  }, 100);
+}
+
+/* ---------------- CSV / downloads ---------------- */
+function csvCell(v) {
+  const s = String(v ?? '');
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+function csvRows(rows) { return rows.map((r) => r.map(csvCell).join(',')).join('\r\n'); }
+function download(filename, content, mime = 'text/plain;charset=utf-8') {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function exportSalesCSV() {
+  const d = reportData();
+  const rows = [['Invoice No', 'Date (AD)', 'Date (BS)', 'Type', 'Customer', 'PAN/VAT', 'Subtotal', 'Discount', 'Taxable', 'VAT', 'Total', 'Received', 'Due', 'Status', 'Payment']];
+  d.invoices.forEach((i) => rows.push([i.no, i.date, bsShort(i.date), typeLabel(i.type), i.party?.name || 'Walk-in Customer', i.party?.pan || i.party?.vat || '', i.subtotal, i.discount, i.taxable, i.vat, i.total, i.received, i.due, i.status, i.payment]));
+  download(`sales-${d.from}-to-${d.to}.csv`, '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('Sales CSV downloaded');
+}
+function exportVatCSV() {
+  const d = reportData();
+  const rows = [['Type', 'Reference', 'Date (AD)', 'Date (BS)', 'Party', 'PAN/VAT', 'Taxable', 'VAT', 'Total']];
+  d.invoices.filter((i) => i.type === 'vat').forEach((i) => rows.push(['Output', i.no, i.date, bsShort(i.date), i.party?.name || 'Walk-in', i.party?.pan || i.party?.vat || '', i.taxable, i.vat, i.total]));
+  d.purchases.filter((p) => num(p.vat) > 0).forEach((p) => rows.push(['Input', p.no, p.date, bsShort(p.date), p.party?.name || 'Cash supplier', p.party?.pan || p.party?.vat || '', p.subtotal, p.vat, p.total]));
+  rows.push([]);
+  rows.push(['Summary', 'Output VAT', d.vatOut]);
+  rows.push(['Summary', 'Input VAT', d.vatIn]);
+  rows.push(['Summary', 'Net VAT', d.netVat]);
+  download(`vat-${d.from}-to-${d.to}.csv`, '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('VAT CSV downloaded');
+}
+function exportStockCSV() {
+  const rows = [['Product', 'SKU', 'Category', 'Unit', 'Stock', 'Cost', 'Selling price', 'Stock value at cost', 'Stock value at retail', 'Low stock alert', 'Status']];
+  DB.products.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach((p) => {
+    const stock = p.track === false ? 0 : num(p.stock);
+    rows.push([p.name, p.sku || '', p.category || '', p.unit || '', p.track === false ? 'service' : stock, p.cost, p.price, r2(stock * num(p.cost)), r2(stock * num(p.price)), p.lowStock, isLowStock(p) ? 'LOW' : 'OK']);
+  });
+  download(`stock-${todayISO()}.csv`, '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('Stock CSV downloaded');
+}
+
+/* ---------------- demo data ---------------- */
+function seedDemo() {
+  DB = blankDB();
+  DB.settings = {
+    ...defaultSettings(),
+    businessName: 'Himalaya Kirana & General Store',
+    tagline: 'Kirana · Snacks · Daily needs',
+    address: 'Lakeside Road, Pokhara-6, Kaski',
+    phone: '061-456789',
+    email: 'hello@himalayakirana.example',
+    panNo: '301234567',
+    vatNo: '301234567',
+    bankDetails: 'eSewa: 9800000000 · Nabil Bank: 0123456789012',
+    terms: 'Goods once sold will not be taken back.',
+    footerNote: 'Thank you! Please visit again.',
+  };
+  const productSeed = [
+    ['Basmati Rice 25kg', 'RICE-25', 'Grocery', 'bag', 2200, 2500, 40, 5, true],
+    ['Sunflower Oil 1L', 'OIL-1L', 'Grocery', 'ltr', 230, 270, 60, 10, true],
+    ['Sugar 1kg', 'SUG-1', 'Grocery', 'kg', 95, 110, 80, 15, true],
+    ['Salt 1kg', 'SALT-1', 'Grocery', 'kg', 25, 35, 100, 20, true],
+    ['Tea Leaves 500g', 'TEA-500', 'Beverage', 'pack', 180, 220, 35, 8, true],
+    ['Milk Powder 500g', 'MILK-500', 'Grocery', 'pack', 420, 490, 25, 6, true],
+    ['Detergent 1kg', 'DET-1', 'Household', 'pack', 160, 200, 30, 8, true],
+    ['Bath Soap', 'SOAP-1', 'Household', 'pcs', 55, 75, 70, 15, true],
+    ['Chicken Momo (10 pcs)', 'MOMO-10', 'Food', 'plate', 120, 180, 50, 10, true],
+    ['Veg Fried Rice', 'FRIED-RICE', 'Food', 'plate', 90, 150, 50, 10, true],
+    ['Tea (Cup)', 'TEA-CUP', 'Beverage', 'cup', 10, 25, 200, 30, true],
+    ['A4 Paper Ream', 'A4-REAM', 'Stationery', 'ream', 420, 520, 20, 5, true],
+  ];
+  DB.products = productSeed.map((p) => ({
+    id: uid(), name: p[0], sku: p[1], category: p[2], unit: p[3], cost: p[4], price: p[5],
+    stock: p[6], lowStock: p[7], vat: p[8], track: true, createdAt: new Date().toISOString(),
+  }));
+  DB.parties = [
+    { id: uid(), type: 'customer', name: 'Ram Bahadur Thapa', phone: '9846000001', address: 'Pokhara-8, Kaski', pan: '301111111', vat: '', createdAt: new Date().toISOString() },
+    { id: uid(), type: 'customer', name: 'Sita Sharma', phone: '9856000002', address: 'Baneshwor, Kathmandu', pan: '302222222', vat: '', createdAt: new Date().toISOString() },
+    { id: uid(), type: 'supplier', name: 'Himalayan Traders', phone: '061-456123', address: 'Pokhara-6, Kaski', pan: '', vat: '303333333', createdAt: new Date().toISOString() },
+    { id: uid(), type: 'supplier', name: 'Kathmandu Wholesale', phone: '01-4567890', address: 'Kalimati, Kathmandu', pan: '', vat: '304444444', createdAt: new Date().toISOString() },
+  ];
+  const customers = DB.parties.filter((p) => p.type === 'customer');
+  const suppliers = DB.parties.filter((p) => p.type === 'supplier');
+
+  function seedInvoice(daysAgo, type, party, specs, paidRatio) {
+    const date = addDays(todayISO(), -daysAgo);
+    const items = specs.map(([idx, qty]) => {
+      const p = DB.products[idx];
+      const base = { productId: p.id, name: p.name, sku: p.sku, unit: p.unit, qty, rate: p.price, disc: 0, vat: p.vat, vatRate: num(DB.settings.vatRate), cost: p.cost };
+      const c = lineCalc(base, type, DB.settings.vatRate);
+      return { ...base, net: c.net, vatAmount: c.vatAmount, total: c.total };
+    });
+    const totals = billTotals({ type, items });
+    const received = type === 'estimate' ? 0 : r2(totals.total * paidRatio);
+    const inv = {
+      id: uid(), no: `${DB.settings.invoicePrefix}-${fiscalCompact(date)}-${pad4(DB.counters.invoice + 1)}`,
+      type, date, dueDate: '', partyId: party ? party.id : '',
+      party: party ? { name: party.name, phone: party.phone || '', address: party.address || '', pan: party.pan || '', vat: party.vat || '' } : { name: 'Walk-in Customer' },
+      items, subtotal: totals.subtotal, discount: totals.discount, taxable: totals.taxable, vat: totals.vat, total: totals.total,
+      received, due: r2(Math.max(0, totals.total - received)), change: r2(Math.max(0, received - totals.total)),
+      payment: paidRatio >= 1 ? 'Cash' : 'Credit', note: '', status: '', createdAt: new Date().toISOString(),
+    };
+    inv.status = invoiceStatus(inv);
+    DB.invoices.push(inv);
+    DB.counters.invoice++;
+    if (type !== 'estimate') {
+      items.forEach((it) => {
+        const p = DB.products.find((x) => x.id === it.productId);
+        if (p && p.track !== false) p.stock = r2(num(p.stock) - num(it.qty));
+      });
+    }
+  }
+
+  seedInvoice(0, 'vat', customers[0], [[0, 2], [1, 3], [2, 5]], 1);
+  seedInvoice(1, 'pan', customers[1], [[8, 3], [9, 2], [10, 4]], 0.5);
+  seedInvoice(3, 'vat', null, [[7, 4], [6, 2], [3, 3]], 1);
+  seedInvoice(6, 'vat', customers[0], [[11, 2], [10, 5], [5, 1]], 0);
+  seedInvoice(9, 'pan', customers[1], [[8, 2], [10, 2]], 1);
+
+  const purchaseDate = addDays(todayISO(), -4);
+  const pItems = [[0, 10, 2200], [1, 20, 230], [2, 30, 95]].map(([idx, qty, rate]) => {
+    const p = DB.products[idx];
+    return { productId: p.id, name: p.name, unit: p.unit, qty, rate };
+  });
+  const pTotals = calcPurchase({ items: pItems, vat: true, vatRate: DB.settings.vatRate });
+  DB.purchases.push({
+    id: uid(), no: `PUR-${fiscalCompact(purchaseDate)}-0001`, date: purchaseDate,
+    partyId: suppliers[0].id, party: { name: suppliers[0].name, phone: suppliers[0].phone, address: suppliers[0].address, pan: suppliers[0].pan, vat: suppliers[0].vat },
+    supplierBillNo: 'HT-2083-118', items: pItems, subtotal: pTotals.subtotal, vat: pTotals.vat, total: pTotals.total,
+    note: 'Weekly grocery restock', createdAt: new Date().toISOString(),
+  });
+  DB.counters.purchase = 1;
+  pItems.forEach((it) => {
+    const p = DB.products.find((x) => x.id === it.productId);
+    if (p && p.track !== false) {
+      const oldStock = num(p.stock);
+      const newStock = oldStock + num(it.qty);
+      p.cost = oldStock > 0 ? r2(((oldStock * num(p.cost)) + (num(it.qty) * num(it.rate))) / newStock) : num(it.rate);
+      p.stock = r2(newStock);
+    }
+  });
+  DB.invoices.sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function loadDemoData() {
+  const hasData = DB.products.length || DB.invoices.length || DB.parties.length;
+  if (hasData && !confirm('Load demo data? This will replace all current data.')) return;
+  seedDemo();
+  saveDB();
+  draft = null;
+  purchaseDraft = null;
+  currentPage = 'dashboard';
+  render();
+  toast('Demo data loaded');
+}
+
+function openWelcome() {
+  openModal({
+    title: 'Welcome to Offline Billing Nepal',
+    wide: true,
+    body: `<div class="welcome">
+      <div class="welcome-hero">
+        <div class="welcome-badge">100% offline · free · open source</div>
+        <h2>Bill faster. Track stock. File VAT with confidence.</h2>
+        <p>A complete billing app for Nepali kirana shops, hotels, offices and companies. No internet, no subscription, no account — your data stays in this browser.</p>
+      </div>
+      <div class="welcome-grid">
+        <div class="welcome-item">${ico('receipt')}<div><strong>VAT &amp; PAN bills</strong><span>13% VAT, PAN invoices, estimates and thermal/A4 printing.</span></div></div>
+        <div class="welcome-item">${ico('box')}<div><strong>Inventory &amp; stock</strong><span>Products, purchases, adjustments, low-stock alerts and history.</span></div></div>
+        <div class="welcome-item">${ico('chart')}<div><strong>Reports &amp; backup</strong><span>Sales, VAT, profit, stock reports and one-click JSON backup.</span></div></div>
+        <div class="welcome-item">${ico('users')}<div><strong>Customers &amp; suppliers</strong><span>Save PAN/VAT details for repeat billing.</span></div></div>
+      </div>
+      <div class="notice">Start fresh and add your business details, or load demo data to explore the app first. You can erase demo data anytime from Settings.</div>
+    </div>`,
+    footer: `<button type="button" class="btn ghost" data-act="welcome-fresh">Start fresh</button><button type="button" class="btn primary" data-act="welcome-demo">Load demo data</button>`,
+  });
+}
+
+/* ---------------- pages / init ---------------- */
+const PAGES = {
+  dashboard: { title: 'Dashboard', sub: 'Your business at a glance', render: dashboardHTML },
+  billing: { title: 'New Bill', sub: 'Create a VAT or PAN invoice', render: billingHTML, mount: mountBilling },
+  invoices: { title: 'Invoices', sub: 'Search, print and record payments', render: invoicesHTML, mount: mountInvoices },
+  inventory: { title: 'Inventory', sub: 'Products, stock and low-stock alerts', render: inventoryHTML, mount: mountInventory },
+  purchases: { title: 'Purchases', sub: 'Stock bought from suppliers', render: purchasesHTML, mount: mountPurchases },
+  parties: { title: 'Customers & Suppliers', sub: 'Contacts and PAN/VAT details', render: partiesHTML, mount: mountParties },
+  reports: { title: 'Reports', sub: 'Sales, VAT, profit and stock', render: reportsHTML, mount: mountReports },
+  settings: { title: 'Settings', sub: 'Business profile, backup and preferences', render: settingsHTML, mount: mountSettings },
+};
+
+function init() {
+  loadDB();
+  render();
+  const menuBtn = $('#menuBtn');
+  if (menuBtn) menuBtn.addEventListener('click', () => $('#app').classList.toggle('nav-open'));
+  const overlay = $('#navOverlay');
+  if (overlay) overlay.addEventListener('click', () => $('#app').classList.remove('nav-open'));
+  window.addEventListener('afterprint', () => document.body.classList.remove('printing'));
+  if (isFirstRun) setTimeout(openWelcome, 300);
+}
+
+init();
+
+</script>
+</body>
+</html>

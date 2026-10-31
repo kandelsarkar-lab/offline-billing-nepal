@@ -1,0 +1,91 @@
+name: Bug report
+description: Report something that is not working correctly
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Offline Billing Nepal. Please do not attach real customer data or backups containing personal information.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+      placeholder: "Example: The VAT total is Rs. 1 less than expected when I add a discount."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps so the issue can be reproduced.
+      placeholder: |
+        1. Open New Bill
+        2. Choose VAT Bill
+        3. Add ...
+        4. See ...
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: "Chrome 141, Firefox 144, Edge 141, Safari 18 ..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Windows laptop or desktop
+        - macOS laptop or desktop
+        - Linux laptop or desktop
+        - Android phone or tablet
+        - iPhone or iPad
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: how-opened
+    attributes:
+      label: How did you open the app?
+      options:
+        - Opened index.html directly from disk (file://)
+        - GitHub Pages
+        - Local web server
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors (optional)
+      description: Open DevTools, go to the Console tab, and paste any red errors.
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (optional)
+      description: Drag and drop screenshots here. Redact personal or customer information.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I am using the latest version of the app.
+          required: true
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I have not included real customer data or personal information.
+          required: true
