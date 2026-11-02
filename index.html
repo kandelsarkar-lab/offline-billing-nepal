@@ -7,6 +7,12 @@
 <title>Offline Billing Nepal — Free VAT / PAN billing, inventory &amp; stock</title>
 <meta name="description" content="Free, fully offline billing app for Nepal. VAT and PAN invoices, inventory, stock management, purchases, customers and reports. Works for kirana shops, hotels, offices and companies. No internet, no subscription.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231d4ed8'/><text x='32' y='45' font-size='34' text-anchor='middle' fill='white' font-family='Arial'>₨</text></svg>">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Billing Nepal">
 <style>
 /* ============================================================
    Offline Billing Nepal — styles
@@ -263,6 +269,11 @@ tbody tr:hover { background: #f8fafc; }
 .logo-actions { display: flex; flex-direction: column; gap: 6px; font-size: 11px; }
 .logo-actions input[type="file"] { font-size: 11px; max-width: 230px; }
 .stack-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.install-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.install-step { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: #f8fafc; }
+.install-step ol { margin: 8px 0 0 18px; padding: 0; color: #334155; font-size: 12px; }
+.install-step li { margin: 4px 0; }
+@media (max-width: 640px) { .install-grid { grid-template-columns: 1fr; } }
 
 /* ---------- preview / modal ---------- */
 .preview-note { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; }
@@ -470,6 +481,8 @@ body.modal-open { overflow: hidden; }
 <div id="modalRoot"></div>
 <div id="toastRoot"></div>
 <div id="printRoot"></div>
+<input type="file" id="productImportFile" accept=".csv,text/csv,text/plain" hidden>
+<input type="file" id="partyImportFile" accept=".csv,text/csv,text/plain" hidden>
 <style id="printPageStyle"></style>
 
 <script>
@@ -490,6 +503,21 @@ const money = (n) => `${esc(S().currency || 'Rs.')} ${fmt(n)}`;
 const pad2 = (n) => String(n).padStart(2, '0');
 const pad4 = (n) => String(n).padStart(4, '0');
 const ico = (name) => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+const APP_VERSION = '1.1.0';
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  toast('App installed on this device');
+});
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
 
 function todayISO() {
   const d = new Date();
@@ -775,7 +803,7 @@ function renderSidebar() {
     <nav class="nav">${nav}</nav>
     <div class="sidebar-foot">
       <div class="offline-chip"><span class="dot"></span> Works fully offline</div>
-      <div class="muted">v1.0 · MIT License</div>
+      <div class="muted">v${APP_VERSION} · MIT License</div>
     </div>`;
 }
 
@@ -898,6 +926,14 @@ function handleAction(action, id, el, idx) {
     case 'export-sales': exportSalesCSV(); break;
     case 'export-vat': exportVatCSV(); break;
     case 'export-stock': exportStockCSV(); break;
+    case 'import-products': { const f = $('#productImportFile'); if (f) f.click(); else toast('Product import is not available here', 'warn'); break; }
+    case 'product-template': downloadProductTemplate(); break;
+    case 'export-products': exportProductsCSV(); break;
+    case 'import-parties': { const f = $('#partyImportFile'); if (f) f.click(); else toast('Contact import is not available here', 'warn'); break; }
+    case 'party-template': downloadPartyTemplate(); break;
+    case 'export-parties': exportPartiesCSV(); break;
+    case 'install-app': installApp(); break;
+    case 'install-help': openInstallHelp(); break;
     case 'print-report': printReport(); break;
     case 'report-preset': setReportPreset(id); break;
     default: break;
@@ -1462,8 +1498,13 @@ function inventoryHTML() {
         <div class="search-box">${ico('search')}<input class="input" id="prodSearch" placeholder="Search product, SKU, category…"></div>
         <select class="input" id="prodCat"><option value="">All categories</option>${cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
         <label class="check"><input type="checkbox" id="prodLow"> Low stock only (${lowCount})</label>
-        <button type="button" class="btn" data-act="export-stock">${ico('download')} Export CSV</button>
+        <button type="button" class="btn" data-act="export-stock">${ico('download')} Export stock CSV</button>
         <button type="button" class="btn primary" data-act="new-product">${ico('plus')} Add product</button>
+      </div>
+      <div class="toolbar-row">
+        <button type="button" class="btn" data-act="import-products">${ico('upload')} Import Excel/CSV</button>
+        <button type="button" class="btn" data-act="product-template">${ico('file')} Download template</button>
+        <button type="button" class="btn" data-act="export-products">${ico('download')} Export products CSV</button>
       </div>
       <div class="muted"><span id="prodCount">${DB.products.length} product(s)</span> · Stock value at cost: <strong>${money(stockValue)}</strong></div>
     </div>
@@ -1949,6 +1990,11 @@ function partiesHTML() {
         <div class="search-box">${ico('search')}<input class="input" id="partySearch" placeholder="Search name, phone, PAN…"></div>
         <button type="button" class="btn primary" data-act="new-party" data-type="${tab}">${ico('plus')} Add ${tab}</button>
       </div>
+      <div class="toolbar-row">
+        <button type="button" class="btn" data-act="import-parties">${ico('upload')} Import Excel/CSV</button>
+        <button type="button" class="btn" data-act="party-template">${ico('file')} Download template</button>
+        <button type="button" class="btn" data-act="export-parties">${ico('download')} Export contacts CSV</button>
+      </div>
       <div class="muted"><span id="partyCount">${list.length} ${tab}(s)</span></div>
     </div>
     <section class="card">
@@ -2218,6 +2264,25 @@ function settingsHTML() {
       </section>
       <div class="stack">
         <section class="card">
+          <div class="card-head"><div><h2>Mobile app</h2><p>Install on your phone</p></div></div>
+          <p class="muted">Install this app on your phone home screen. It opens like a normal app and keeps working offline. Your data stays on this device.</p>
+          <div class="stack-buttons">
+            <button type="button" class="btn primary" data-act="install-app">${ico('download')} Install app</button>
+            <button type="button" class="btn" data-act="install-help">${ico('file')} How to install on Android / iPhone</button>
+          </div>
+        </section>
+        <section class="card">
+          <div class="card-head"><div><h2>Excel / CSV data</h2><p>Bulk add products and contacts</p></div></div>
+          <p class="muted">Download a template, fill it in Excel or Google Sheets, save it as <strong>CSV UTF-8</strong>, then import it. Existing products with the same SKU or name are updated.</p>
+          <div class="stack-buttons">
+            <button type="button" class="btn" data-act="product-template">${ico('download')} Product template</button>
+            <button type="button" class="btn" data-act="import-products">${ico('upload')} Import products CSV</button>
+            <button type="button" class="btn" data-act="party-template">${ico('download')} Customer/supplier template</button>
+            <button type="button" class="btn" data-act="import-parties">${ico('upload')} Import contacts CSV</button>
+          </div>
+          <p class="muted" style="margin-top:10px">Excel <strong>.xlsx</strong> files are not read directly. In Excel choose <strong>Save As → CSV UTF-8</strong> first.</p>
+        </section>
+        <section class="card">
           <div class="card-head"><div><h2>Backup &amp; restore</h2><p>Keep a copy of your data</p></div></div>
           <p class="muted">Everything is stored in this browser only. Export a backup regularly, especially before clearing browser data or changing computers.</p>
           <div class="stack-buttons">
@@ -2234,8 +2299,8 @@ function settingsHTML() {
         </section>
         <section class="card">
           <div class="card-head"><div><h2>About</h2><p>Free &amp; open source</p></div></div>
-          <p class="muted">Offline Billing Nepal is a free, MIT-licensed billing app for Nepali shops, hotels, offices and companies. It works without internet, keeps data on your device, and supports VAT and PAN bills.</p>
-          <div class="muted">Version 1.0 · Data schema v${DB.version}</div>
+          <p class="muted">Offline Billing Nepal is a free, MIT-licensed billing app for Nepali shops, hotels, offices and companies. It works without internet, keeps data on your device, supports VAT and PAN bills, installs on mobile, and imports products or contacts from Excel/CSV.</p>
+          <div class="muted">Version ${APP_VERSION} · Data schema v${DB.version}</div>
         </section>
       </div>
     </div>`;
@@ -2595,6 +2660,244 @@ function exportStockCSV() {
   toast('Stock CSV downloaded');
 }
 
+/* ---------------- Excel / CSV import & export ---------------- */
+function csvNormalizeHeader(value) {
+  return String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function csvHeaderMap(header) {
+  const map = {};
+  header.forEach((value, index) => {
+    const key = csvNormalizeHeader(value);
+    if (key && !Object.prototype.hasOwnProperty.call(map, key)) map[key] = index;
+  });
+  return map;
+}
+function csvValue(row, map, names) {
+  for (const name of names) {
+    const key = csvNormalizeHeader(name);
+    if (Object.prototype.hasOwnProperty.call(map, key)) {
+      const value = row[map[key]];
+      return value == null ? '' : String(value).trim();
+    }
+  }
+  return '';
+}
+function csvNumber(value) {
+  const cleaned = String(value ?? '').replace(/[,\s]/g, '').replace(/[^\d.\-]/g, '');
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? n : 0;
+}
+function csvBoolean(value, fallback = true) {
+  const s = String(value ?? '').trim().toLowerCase();
+  if (!s) return fallback;
+  return !['0', 'false', 'no', 'n', 'off', 'exempt', 'non-vat', 'non vat', 'none', 'service'].includes(s);
+}
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let quoted = false;
+  const input = String(text ?? '').replace(/^\uFEFF/, '');
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (quoted) {
+      if (ch === '"') {
+        if (input[i + 1] === '"') { cell += '"'; i++; }
+        else quoted = false;
+      } else if (ch !== '\r') {
+        cell += ch;
+      }
+    } else if (ch === '"') {
+      quoted = true;
+    } else if (ch === ',') {
+      row.push(cell); cell = '';
+    } else if (ch === '\n') {
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else if (ch !== '\r') {
+      cell += ch;
+    }
+  }
+  if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter((r) => r.some((c) => String(c).trim() !== ''));
+}
+function readTextFile(file, onLoad, onError) {
+  const reader = new FileReader();
+  reader.onload = () => onLoad(String(reader.result ?? ''));
+  reader.onerror = () => onError && onError();
+  reader.readAsText(file, 'UTF-8');
+}
+
+function downloadProductTemplate() {
+  const rows = [
+    ['name', 'sku', 'category', 'unit', 'cost', 'price', 'stock', 'lowStock', 'vat', 'track'],
+    ['Basmati Rice 25kg', 'RICE-25', 'Grocery', 'bag', '2200', '2500', '10', '3', 'yes', 'yes'],
+    ['Milk 1L', 'MILK-1L', 'Dairy', 'pcs', '90', '110', '24', '6', 'yes', 'yes'],
+    ['Delivery charge', 'DELIVERY', 'Service', 'service', '0', '100', '0', '0', 'no', 'no']
+  ];
+  download('products-template.csv', '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('Product CSV template downloaded');
+}
+function exportProductsCSV() {
+  const rows = [['name', 'sku', 'category', 'unit', 'cost', 'price', 'stock', 'lowStock', 'vat', 'track']];
+  DB.products.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach((p) => {
+    rows.push([p.name, p.sku || '', p.category || '', p.unit || '', num(p.cost), num(p.price), p.track === false ? '' : num(p.stock), num(p.lowStock), p.vat !== false ? 'yes' : 'no', p.track !== false ? 'yes' : 'no']);
+  });
+  download(`products-${todayISO()}.csv`, '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('Products CSV downloaded');
+}
+function importProductsFromCSV(text) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) throw new Error('CSV needs a header row and at least one product row');
+  const map = csvHeaderMap(rows[0]);
+  if (!['name', 'product', 'product name', 'item', 'item name'].some((key) => Object.prototype.hasOwnProperty.call(map, key))) {
+    throw new Error('CSV must have a "name" or "product" column');
+  }
+  const parsed = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const name = csvValue(row, map, ['name', 'product', 'product name', 'item', 'item name']);
+    if (!name) continue;
+    const stockText = csvValue(row, map, ['stock', 'quantity', 'qty', 'opening stock', 'current stock']);
+    parsed.push({
+      name,
+      sku: csvValue(row, map, ['sku', 'code', 'sku code']),
+      category: csvValue(row, map, ['category', 'group']),
+      unit: csvValue(row, map, ['unit', 'uom']) || 'pcs',
+      cost: Math.max(0, csvNumber(csvValue(row, map, ['cost', 'purchase cost', 'buy price', 'buying price']))),
+      price: Math.max(0, csvNumber(csvValue(row, map, ['price', 'selling price', 'sale price', 'rate']))),
+      stock: Math.max(0, csvNumber(stockText)),
+      lowStock: Math.max(0, csvNumber(csvValue(row, map, ['lowstock', 'low stock', 'low stock alert', 'reorder level', 'alert at']))),
+      vat: csvBoolean(csvValue(row, map, ['vat', 'apply vat', 'taxable']), true),
+      track: csvBoolean(csvValue(row, map, ['track', 'track stock', 'inventory']), true),
+    });
+  }
+  if (!parsed.length) throw new Error('No product rows found in the CSV');
+  if (!confirm(`Import ${parsed.length} product(s)?\n\nProducts with the same SKU or name will be updated.`)) return;
+  let added = 0, updated = 0;
+  parsed.forEach((payload) => {
+    const existing = DB.products.find((p) => (payload.sku && p.sku && p.sku.toLowerCase() === payload.sku.toLowerCase()) || p.name.toLowerCase() === payload.name.toLowerCase());
+    if (existing) {
+      const oldStock = num(existing.stock);
+      Object.assign(existing, payload);
+      if (payload.track !== false && num(payload.stock) !== oldStock) {
+        DB.adjustments.unshift({ id: uid(), date: todayISO(), productId: existing.id, type: num(payload.stock) > oldStock ? 'in' : 'out', qty: Math.abs(num(payload.stock) - oldStock), reason: 'CSV import correction', createdAt: new Date().toISOString() });
+      }
+      updated++;
+    } else {
+      const product = { id: uid(), ...payload, createdAt: new Date().toISOString() };
+      DB.products.push(product);
+      if (product.track !== false && num(product.stock) > 0) {
+        DB.adjustments.unshift({ id: uid(), date: todayISO(), productId: product.id, type: 'in', qty: num(product.stock), reason: 'Opening stock (CSV import)', createdAt: new Date().toISOString() });
+      }
+      added++;
+    }
+  });
+  saveDB();
+  render();
+  toast(`Products imported: ${added} new, ${updated} updated`);
+}
+function handleProductImportFile(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  readTextFile(file, (text) => {
+    try { importProductsFromCSV(text); }
+    catch (error) { console.error(error); toast(error.message || 'Could not import products', 'error'); }
+  }, () => toast('Could not read that file', 'error'));
+}
+
+function downloadPartyTemplate() {
+  const rows = [
+    ['type', 'name', 'phone', 'address', 'pan', 'vat'],
+    ['customer', 'Ram Bahadur Thapa', '9846000001', 'Pokhara-8, Kaski', '301111111', ''],
+    ['supplier', 'Himalayan Traders', '061-456123', 'Pokhara-6, Kaski', '', '303333333']
+  ];
+  download('customers-suppliers-template.csv', '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('Customer/supplier CSV template downloaded');
+}
+function exportPartiesCSV() {
+  const rows = [['type', 'name', 'phone', 'address', 'pan', 'vat']];
+  DB.parties.slice().sort((a, b) => `${a.type} ${a.name}`.localeCompare(`${b.type} ${b.name}`)).forEach((p) => {
+    rows.push([p.type, p.name, p.phone || '', p.address || '', p.pan || '', p.vat || '']);
+  });
+  download(`contacts-${todayISO()}.csv`, '\ufeff' + csvRows(rows), 'text/csv;charset=utf-8');
+  toast('Contacts CSV downloaded');
+}
+function importPartiesFromCSV(text) {
+  const rows = parseCSV(text);
+  if (rows.length < 2) throw new Error('CSV needs a header row and at least one contact row');
+  const map = csvHeaderMap(rows[0]);
+  if (!['name', 'contact', 'contact name'].some((key) => Object.prototype.hasOwnProperty.call(map, key))) {
+    throw new Error('CSV must have a "name" column');
+  }
+  const parsed = [];
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    const name = csvValue(row, map, ['name', 'contact', 'contact name']);
+    if (!name) continue;
+    const typeText = csvValue(row, map, ['type', 'party type', 'contact type']).toLowerCase();
+    const type = typeText === 'supplier' ? 'supplier' : typeText === 'customer' ? 'customer' : ui.partyTab;
+    parsed.push({
+      type,
+      name,
+      phone: csvValue(row, map, ['phone', 'mobile', 'contact number']),
+      address: csvValue(row, map, ['address', 'city', 'location']),
+      pan: csvValue(row, map, ['pan', 'pan no', 'pan number']),
+      vat: csvValue(row, map, ['vat', 'vat no', 'vat number']),
+    });
+  }
+  if (!parsed.length) throw new Error('No contact rows found in the CSV');
+  if (!confirm(`Import ${parsed.length} contact(s)?\n\nContacts with the same name and type will be updated.`)) return;
+  let added = 0, updated = 0;
+  parsed.forEach((payload) => {
+    const existing = DB.parties.find((p) => p.type === payload.type && p.name.toLowerCase() === payload.name.toLowerCase());
+    if (existing) { Object.assign(existing, payload); updated++; }
+    else { DB.parties.push({ id: uid(), ...payload, createdAt: new Date().toISOString() }); added++; }
+  });
+  saveDB();
+  render();
+  toast(`Contacts imported: ${added} new, ${updated} updated`);
+}
+function handlePartyImportFile(event) {
+  const file = event.target.files && event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  readTextFile(file, (text) => {
+    try { importPartiesFromCSV(text); }
+    catch (error) { console.error(error); toast(error.message || 'Could not import contacts', 'error'); }
+  }, () => toast('Could not read that file', 'error'));
+}
+
+/* ---------------- install / mobile ---------------- */
+function installApp() {
+  if (isStandalone()) { toast('This app is already installed on this device'); return; }
+  if (deferredInstallPrompt) {
+    try { deferredInstallPrompt.prompt(); }
+    catch (error) { deferredInstallPrompt = null; openInstallHelp(); return; }
+    deferredInstallPrompt.userChoice.then((choice) => {
+      deferredInstallPrompt = null;
+      toast(choice.outcome === 'accepted' ? 'Installing app…' : 'Install cancelled', choice.outcome === 'accepted' ? 'ok' : 'warn');
+    }).catch(() => { deferredInstallPrompt = null; openInstallHelp(); });
+    return;
+  }
+  openInstallHelp();
+}
+function openInstallHelp() {
+  openModal({
+    title: 'Install on your phone',
+    wide: true,
+    body: `<div class="install-help">
+      <div class="notice">After installing, open the app from your home screen. It works offline. Your data is stored on this phone.</div>
+      <div class="install-grid">
+        <div class="install-step"><strong>Android — Chrome</strong><ol><li>Open the live app in Chrome.</li><li>Tap the three-dot menu.</li><li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li><li>Confirm.</li></ol></div>
+        <div class="install-step"><strong>iPhone — Safari</strong><ol><li>Open the live app in Safari.</li><li>Tap the Share button.</li><li>Scroll and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol></div>
+      </div>
+      <div class="notice" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534">Backup regularly: Settings → Export backup (.json). Clearing browser data deletes the app data.</div>
+    </div>`,
+    footer: `<button type="button" class="btn ghost" data-act="close-modal">Close</button><button type="button" class="btn primary" data-act="install-app">Try install now</button>`,
+  });
+}
+
 /* ---------------- demo data ---------------- */
 function seedDemo() {
   DB = blankDB();
@@ -2751,6 +3054,13 @@ function init() {
   if (menuBtn) menuBtn.addEventListener('click', () => $('#app').classList.toggle('nav-open'));
   const overlay = $('#navOverlay');
   if (overlay) overlay.addEventListener('click', () => $('#app').classList.remove('nav-open'));
+  const productImport = $('#productImportFile');
+  if (productImport) productImport.addEventListener('change', handleProductImportFile);
+  const partyImport = $('#partyImportFile');
+  if (partyImport) partyImport.addEventListener('change', handlePartyImportFile);
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('Service worker registration failed', err));
+  }
   window.addEventListener('afterprint', () => document.body.classList.remove('printing'));
   if (isFirstRun) setTimeout(openWelcome, 300);
 }

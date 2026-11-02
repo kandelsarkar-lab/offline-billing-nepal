@@ -7,21 +7,23 @@ This guide explains how to set up and use **Offline Billing Nepal** for a kirana
 ## Contents
 
 1. [Getting started](#getting-started)
-2. [A tour of the interface](#a-tour-of-the-interface)
-3. [Set up your business](#set-up-your-business)
-4. [Add products and services](#add-products-and-services)
-5. [Add customers and suppliers](#add-customers-and-suppliers)
-6. [Create a bill](#create-a-bill)
-7. [Manage invoices and payments](#manage-invoices-and-payments)
-8. [Record purchases](#record-purchases)
-9. [Check reports](#check-reports)
-10. [Print or save a PDF](#print-or-save-a-pdf)
-11. [Backup and restore](#backup-and-restore)
-12. [Demo data and reset](#demo-data-and-reset)
-13. [Examples for different businesses](#examples-for-different-businesses)
-14. [Troubleshooting](#troubleshooting)
-15. [Glossary](#glossary)
-16. [Important notes on VAT and legal compliance](#important-notes-on-vat-and-legal-compliance)
+2. [Install on mobile](#install-on-mobile)
+3. [Add data from Excel/CSV](#add-data-from-excelcsv)
+4. [A tour of the interface](#a-tour-of-the-interface)
+5. [Set up your business](#set-up-your-business)
+6. [Add products and services](#add-products-and-services)
+7. [Add customers and suppliers](#add-customers-and-suppliers)
+8. [Create a bill](#create-a-bill)
+9. [Manage invoices and payments](#manage-invoices-and-payments)
+10. [Record purchases](#record-purchases)
+11. [Check reports](#check-reports)
+12. [Print or save a PDF](#print-or-save-a-pdf)
+13. [Backup and restore](#backup-and-restore)
+14. [Demo data and reset](#demo-data-and-reset)
+15. [Examples for different businesses](#examples-for-different-businesses)
+16. [Troubleshooting](#troubleshooting)
+17. [Glossary](#glossary)
+18. [Important notes on VAT and legal compliance](#important-notes-on-vat-and-legal-compliance)
 
 ---
 
@@ -62,6 +64,79 @@ On the first run, the app shows a short welcome dialog. You can:
 - **Start fresh** and enter your own business details.
 
 You can load demo data later from **Settings → Load demo data**.
+
+---
+
+## Install on mobile
+
+The GitHub Pages version can be installed on a phone home screen.
+
+**Live app:** <https://kandelsarkar-lab.github.io/offline-billing-nepal/>
+
+### Android — Chrome
+
+1. Open the live app in **Chrome**.
+2. Tap the **three-dot menu**.
+3. Tap **Add to Home screen** or **Install app**.
+4. Confirm.
+
+### iPhone — Safari
+
+1. Open the live app in **Safari**.
+2. Tap the **Share** button.
+3. Scroll down and tap **Add to Home Screen**.
+4. Tap **Add**.
+
+The app appears on the home screen and works offline after the first load. Data is stored on that phone in that browser. It does not sync automatically.
+
+Inside the app, open **Settings → Mobile app** for the install button and the same instructions.
+
+For more detail, see [Mobile and Excel guide](MOBILE_AND_EXCEL.md).
+
+---
+
+## Add data from Excel/CSV
+
+You can prepare products or contacts in Excel, Google Sheets or LibreOffice Calc and import them in bulk.
+
+### Products
+
+1. Open **Inventory**.
+2. Tap **Download template**.
+3. Fill the CSV file.
+4. Save it as **CSV UTF-8**.
+5. Tap **Import Excel/CSV** and select the file.
+
+Product columns:
+
+```text
+name,sku,category,unit,cost,price,stock,lowStock,vat,track
+```
+
+- `name` is required.
+- `vat` and `track` accept `yes` or `no`.
+- Use `track = no` for services.
+- Existing products are matched by **SKU or name**.
+- Stock changes are recorded as adjustments.
+
+### Customers and suppliers
+
+1. Open **Customers**.
+2. Tap **Download template**.
+3. Fill the CSV file.
+4. Save it as **CSV UTF-8**.
+5. Tap **Import Excel/CSV** and select the file.
+
+Contact columns:
+
+```text
+type,name,phone,address,pan,vat
+```
+
+- `type` can be `customer` or `supplier`.
+- Existing contacts are matched by **name and type**.
+
+Excel `.xlsx` files are not read directly. Save as **CSV UTF-8** first. See [Mobile and Excel guide](MOBILE_AND_EXCEL.md) for examples and troubleshooting.
 
 ---
 

@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Free, fully offline billing, inventory and VAT/PAN invoicing for Nepal.</strong><br>
-  One HTML file. No installation. No subscription. No internet. Your data stays on your device.
+  One HTML file. No account. No subscription. No internet required. Your data stays on your device.
 </p>
 
 <p align="center">
@@ -14,6 +14,10 @@
   <img alt="Works offline" src="https://img.shields.io/badge/works-100%25%20offline-blue.svg">
   <img alt="Single file" src="https://img.shields.io/badge/app-single%20HTML%20file-orange.svg">
   <img alt="Made for Nepal" src="https://img.shields.io/badge/made%20for-Nepal-crimson.svg">
+</p>
+
+<p align="center">
+  <strong>Live app:</strong> <a href="https://kandelsarkar-lab.github.io/offline-billing-nepal/">https://kandelsarkar-lab.github.io/offline-billing-nepal/</a>
 </p>
 
 ---
@@ -75,6 +79,15 @@ It is designed for **kirana shops, hotels and restaurants, offices, companies, w
 - Stock value at cost and retail.
 - Export **Sales CSV**, **VAT CSV** and **Stock CSV**.
 - Print a clean A4 report.
+
+### Mobile app & Excel
+
+- Install on **Android** and **iPhone** home screens as a PWA.
+- Works offline after the first load.
+- Download **product** and **customer/supplier** CSV templates.
+- Import data from **Excel or Google Sheets** by saving as CSV UTF-8.
+- Export products and contacts back to CSV for editing or backup.
+- Existing products with the same SKU or name are updated on import.
 
 ### Data & backup
 
@@ -144,6 +157,60 @@ python3 -m http.server 8080
 
 Then open <http://localhost:8080>.
 
+## Install on mobile
+
+The hosted app can be installed on a phone home screen and used like a normal app.
+
+**Live app:** <https://kandelsarkar-lab.github.io/offline-billing-nepal/>
+
+### Android — Chrome
+
+1. Open the live app in Chrome.
+2. Tap the **three-dot menu**.
+3. Tap **Add to Home screen** or **Install app**.
+4. Confirm.
+
+### iPhone — Safari
+
+1. Open the live app in Safari.
+2. Tap the **Share** button.
+3. Scroll down and tap **Add to Home Screen**.
+4. Tap **Add**.
+
+After installation, open the app from the home screen. The app shell is cached by a service worker, so it keeps working offline after the first load.
+
+> Your data is stored on the phone, in that browser. It does not sync automatically between devices. Use **Settings → Export backup** to move data.
+
+See the full guide: [Mobile and Excel guide](docs/MOBILE_AND_EXCEL.md).
+
+## Add data from Excel or CSV
+
+You can bulk-add products and contacts using Excel, Google Sheets, or any spreadsheet app.
+
+1. Open **Inventory → Download template** or **Customers → Download template**.
+2. Fill the CSV file in Excel or Google Sheets.
+3. Save it as **CSV UTF-8**.
+4. Open **Inventory → Import Excel/CSV** or **Customers → Import Excel/CSV**.
+5. Select the file and confirm the import.
+
+Product columns:
+
+```text
+name,sku,category,unit,cost,price,stock,lowStock,vat,track
+```
+
+Customer/supplier columns:
+
+```text
+type,name,phone,address,pan,vat
+```
+
+- `type` can be `customer` or `supplier`.
+- `vat` and `track` can be `yes` or `no`.
+- Existing products are matched by **SKU or name**.
+- Existing contacts are matched by **name and type**.
+- Excel `.xlsx` files are not read directly. Save as **CSV UTF-8** first.
+
 ## How to use
 
 ### 1. Set up your business
@@ -170,6 +237,7 @@ Go to **Inventory → Add product**.
 - Set a **low stock alert** level.
 - Use **Stock in** for opening stock, returns or corrections.
 - Use **Purchases** for proper supplier purchases with VAT.
+- To add many products at once, download the CSV template and use **Import Excel/CSV**.
 
 ### 3. Add customers and suppliers
 
@@ -261,16 +329,19 @@ Open an invoice and click **Thermal 80mm**.
 - Data is tied to the browser and device. Opening the file in a different browser shows a different data store.
 - Clearing browser data, using private/incognito mode, or changing devices can remove your data.
 - **Export a JSON backup regularly**, especially before updating the app or changing computers.
+- CSV imports are processed entirely on your device. No file is uploaded anywhere.
+- On mobile, the installed app uses the same browser storage. Clearing the browser/app data deletes it, so keep a backup.
 - For a shared shop computer, keep a backup on a USB drive or in your own cloud storage.
 
 ## Technology
 
-- **Single file:** `index.html` contains all HTML, CSS and JavaScript.
+- **Single app file:** `index.html` contains all HTML, CSS and application JavaScript.
+- **PWA support:** `manifest.webmanifest`, `sw.js` and `icons/` enable installation and offline caching.
 - **Vanilla JavaScript** — no React, Vue, jQuery or build tools.
 - **localStorage** for persistence.
 - **Inline SVG** icons — no icon fonts or CDNs.
 - **Bikram Sambat calendar data** embedded for AD ↔ BS conversion.
-- **No dependencies** and no network requests.
+- **No runtime dependencies** and no third-party network requests. The service worker caches the app shell for offline use.
 
 The app has been tested in Chromium on desktop and mobile viewports. Core flows tested include billing, PAN/VAT totals, estimates, stock deduction/restoration, purchases, payments, reports, CSV export, backup/restore and printing.
 
@@ -279,6 +350,9 @@ The app has been tested in Chromium on desktop and mobile viewports. Core flows 
 ```text
 .
 ├── index.html                  # The entire application
+├── manifest.webmanifest        # PWA install metadata
+├── sw.js                       # Offline service worker
+├── icons/                      # App icons for mobile install
 ├── README.md                   # This file
 ├── README.np.md                # Nepali quick guide
 ├── LICENSE                     # MIT License
@@ -288,7 +362,8 @@ The app has been tested in Chromium on desktop and mobile viewports. Core flows 
 ├── .editorconfig               # Editor formatting rules
 ├── .gitignore                  # Files Git should ignore
 ├── docs/
-│   └── USER_GUIDE.md           # Step-by-step user guide
+│   ├── USER_GUIDE.md           # Step-by-step user guide
+│   └── MOBILE_AND_EXCEL.md     # Mobile install and CSV import guide
 ├── screenshots/                # Screenshots used in the README
 └── .github/
     ├── ISSUE_TEMPLATE/         # Bug and feature request forms
@@ -329,6 +404,8 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 - [x] Reports and CSV export
 - [x] JSON backup and restore
 - [x] Responsive UI
+- [x] Mobile install (PWA)
+- [x] Excel/CSV import for products and contacts
 - [ ] Nepali UI language toggle
 - [ ] Barcode scanning
 - [ ] Customer credit ledger

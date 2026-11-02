@@ -6,13 +6,17 @@
 
 <p align="center">
   <strong>नेपालका साना व्यवसायका लागि पूर्ण अफलाइन, निःशुल्क बिलिङ, स्टक र भ्याट/प्यान इन्भ्वाइसिङ।</strong><br>
-  एउटै HTML फाइल। इन्स्टल गर्नु पर्दैन। इन्टरनेट चाहिँदैन। डाटा तपाईंको यन्त्रमै रहन्छ।
+  एउटै HTML फाइल। खाता वा सदस्यता चाहिँदैन। इन्टरनेट चाहिँदैन। डाटा तपाईंको यन्त्रमै रहन्छ।
 </p>
 
 <p align="center">
   <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-green.svg">
   <img alt="Offline" src="https://img.shields.io/badge/works-100%25%20offline-blue.svg">
   <img alt="Single file" src="https://img.shields.io/badge/app-single%20HTML%20file-orange.svg">
+</p>
+
+<p align="center">
+  <strong>प्रत्यक्ष एप:</strong> <a href="https://kandelsarkar-lab.github.io/offline-billing-nepal/">https://kandelsarkar-lab.github.io/offline-billing-nepal/</a>
 </p>
 
 ---
@@ -73,6 +77,15 @@
 - **Sales CSV**, **VAT CSV** र **Stock CSV** निर्यात।
 - A4 रिपोर्ट प्रिन्ट।
 
+### मोबाइल र Excel/CSV
+
+- Android र iPhone को होम स्क्रिनमा **PWA** को रूपमा इन्स्टल गर्न सकिने।
+- पहिलो पटक खोलेपछि इन्टरनेट बिना पनि चल्ने।
+- सामान र ग्राहक/आपूर्तिकर्ताको **CSV टेम्प्लेट** डाउनलोड।
+- Excel वा Google Sheets बाट **CSV UTF-8** मा सेभ गरेर बल्क डाटा आयात।
+- सामान र सम्पर्कहरू CSV मा निर्यात गरेर सम्पादन वा ब्याकअप गर्न सकिने।
+- एउटै SKU वा नाम भएका सामान आयात गर्दा अपडेट हुने।
+
 ### डाटा र ब्याकअप
 
 - डाटा ब्राउजरको **localStorage** मा तपाईंको यन्त्रमै रहन्छ।
@@ -91,7 +104,7 @@
 4. **Inventory** बाट सामान थप्नुहोस्।
 5. **New Bill** बाट पहिलो बिल बनाउनुहोस्।
 
-इन्स्टल, बिल्ड वा इन्टरनेट आवश्यक छैन।
+इन्स्टल वा बिल्ड आवश्यक छैन; मोबाइलमा चाहे होम स्क्रिनमा इन्स्टल गर्न सकिन्छ।
 
 ### २. GitHub Pages बाट सबैलाई उपलब्ध गराउनुहोस्
 
@@ -108,6 +121,69 @@ python3 -m http.server 8080
 ```
 
 त्यसपछि <http://localhost:8080> खोल्नुहोस्।
+
+## मोबाइलमा इन्स्टल गर्ने
+
+GitHub Pages को लिंक फोनमा खोलेर होम स्क्रिनमा इन्स्टल गर्न सकिन्छ।
+
+### Android — Chrome
+
+1. लिंक **Chrome** मा खोल्नुहोस्।
+2. माथि दायाँको **तीन थोप्ला (⋮)** मेनु थिच्नुहोस्।
+3. **Add to Home screen** वा **Install app** थिच्नुहोस्।
+4. पुष्टि गर्नुहोस्।
+
+### iPhone — Safari
+
+1. लिंक **Safari** मा खोल्नुहोस्।
+2. **Share** बटन थिच्नुहोस्।
+3. तल स्क्रोल गरेर **Add to Home Screen** थिच्नुहोस्।
+4. **Add** थिच्नुहोस्।
+
+इन्स्टल गरेपछि होम स्क्रिनबाट खोल्नुहोस्। पहिलो पटक खोलेपछि एप इन्टरनेट बिना पनि चल्छ। डाटा त्यही फोनको ब्राउजरमा रहन्छ; स्वतः सिंक हुँदैन। एपभित्र **Settings → Mobile app** मा पनि यही निर्देशन पाइन्छ।
+
+## Excel/CSV बाट डाटा थप्ने
+
+धेरै सामान वा सम्पर्क एकैचोटि थप्न Excel, Google Sheets वा LibreOffice Calc प्रयोग गर्न सकिन्छ।
+
+### सामान
+
+1. **Inventory** खोल्नुहोस्।
+2. **Download template** थिच्नुहोस्।
+3. CSV फाइलमा डाटा भर्नुहोस्।
+4. **CSV UTF-8** मा सेभ गर्नुहोस्।
+5. **Import Excel/CSV** थिचेर फाइल छान्नुहोस्।
+
+सामानको कोलम:
+
+```text
+name,sku,category,unit,cost,price,stock,lowStock,vat,track
+```
+
+- `name` अनिवार्य छ।
+- `vat` र `track` मा `yes` वा `no` राख्नुहोस्।
+- सेवाको हकमा `track` मा `no` राख्नुहोस्।
+- एउटै **SKU वा नाम** भएको सामान अपडेट हुन्छ।
+- स्टक परिवर्तन भएमा स्टक इतिहासमा समायोजन रेकर्ड हुन्छ।
+
+### ग्राहक र आपूर्तिकर्ता
+
+1. **Customers** खोल्नुहोस्।
+2. **Download template** थिच्नुहोस्।
+3. CSV फाइल भर्नुहोस्।
+4. **CSV UTF-8** मा सेभ गर्नुहोस्।
+5. **Import Excel/CSV** थिचेर फाइल छान्नुहोस्।
+
+सम्पर्कको कोलम:
+
+```text
+type,name,phone,address,pan,vat
+```
+
+- `type` मा `customer` वा `supplier` राख्नुहोस्।
+- एउटै **नाम र प्रकार** भएको सम्पर्क अपडेट हुन्छ।
+
+Excel को `.xlsx` फाइल सिधै पढिँदैन। पहिले **CSV UTF-8** मा सेभ गर्नुहोस्। विस्तृत निर्देशन: [Mobile and Excel guide](docs/MOBILE_AND_EXCEL.md)।
 
 ## कसरी प्रयोग गर्ने?
 
@@ -204,11 +280,14 @@ python3 -m http.server 8080
 - कुनै analytics, tracking वा लगइन छैन।
 - डाटा ब्राउजर र यन्त्रसँग बाँधिएको हुन्छ।
 - ब्राउजरको डाटा मेटाउँदा, incognito प्रयोग गर्दा वा यन्त्र फेर्दा डाटा जानसक्छ।
+- CSV आयात तपाईंको यन्त्रमै प्रशोधन हुन्छ; कुनै फाइल सर्भरमा पठाइँदैन।
+- मोबाइलमा इन्स्टल गरेपछि पनि ब्राउजर/एप डाटा मेटाउँदा डाटा जानसक्छ।
 - **नियमित रूपमा JSON ब्याकअप लिनुहोस्।**
 
 ## प्रविधि
 
-- एउटै `index.html` फाइलमा HTML, CSS र JavaScript।
+- एउटै `index.html` फाइलमा HTML, CSS र एपको JavaScript।
+- **PWA** का लागि `manifest.webmanifest`, `sw.js` र `icons/`।
 - कुनै framework, build tool वा CDN छैन।
 - localStorage मा डाटा।
 - AD ↔ BS मिति रूपान्तरणको लागि विक्रम सम्वत् क्यालेन्डर डाटा भित्रै।
@@ -217,6 +296,7 @@ python3 -m http.server 8080
 ## थप दस्तावेज
 
 - अंग्रेजी विस्तृत गाइड: [docs/USER_GUIDE.md](docs/USER_GUIDE.md)
+- मोबाइल इन्स्टल र Excel/CSV गाइड: [docs/MOBILE_AND_EXCEL.md](docs/MOBILE_AND_EXCEL.md)
 - अंग्रेजी मुख्य README: [README.md](README.md)
 
 ## योगदान
