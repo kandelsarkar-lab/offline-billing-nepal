@@ -229,7 +229,7 @@ The customer details are copied onto the invoice.
 
 You can edit the quantity, rate and discount directly in the item table. The totals update immediately.
 
-For a tracked product, the app will not let you add more than the available stock. For services and untracked items, there is no stock limit.
+For a tracked product, the app will not let you add more than the available stock. If you add the same product on more than one line, the quantities are counted together. For services and untracked items, there is no stock limit. Estimates can also include any quantity, because they do not deduct stock.
 
 ### Step 5: Review the summary
 

@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevented negative stock when the same product is added to a bill more than once.
+- Prevented saving a bill whose edited quantities exceed the available stock.
+- Prevented negative stock when deleting a purchase that lists the same product on multiple lines.
+- Blocked saving a negative stock quantity for a tracked product.
+- Estimates can now include quantities above current stock, because estimates do not deduct stock.
+
 ### Planned
 
 - Nepali UI language toggle.

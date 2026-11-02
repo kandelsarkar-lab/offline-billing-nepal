@@ -1216,9 +1216,13 @@ function addBillItem() {
   if (!p) return;
   const qty = num($('#itemQty').value) || 1;
   if (qty <= 0) { toast('Quantity must be greater than zero', 'warn'); return; }
-  if (p.track !== false && qty > num(p.stock)) {
-    toast(`Only ${num(p.stock)} ${p.unit || 'unit'} of ${p.name} in stock`, 'error');
-    return;
+  if (d.type !== 'estimate' && p.track !== false) {
+    const already = r2(d.items.filter((it) => it.productId === p.id).reduce((a, it) => a + num(it.qty), 0));
+    const available = r2(num(p.stock) - already);
+    if (qty > available) {
+      toast(`Only ${available} ${p.unit || 'unit'} of ${p.name} left for this bill`, 'error');
+      return;
+    }
   }
   const rate = $('#itemRate').value === '' ? num(p.price) : num($('#itemRate').value);
   const disc = Math.max(0, Math.min(100, num($('#itemDisc').value)));
@@ -1236,6 +1240,20 @@ function saveBill(autoPrint) {
   const bad = d.items.find((it) => num(it.qty) <= 0 || num(it.rate) < 0);
   if (bad) { toast('Check quantity and rate of every item', 'warn'); return; }
   const totals = billTotals(d);
+  if (d.type !== 'estimate') {
+    const needed = new Map();
+    d.items.forEach((it) => {
+      const p = DB.products.find((x) => x.id === it.productId);
+      if (p && p.track !== false) needed.set(p.id, r2((needed.get(p.id) || 0) + num(it.qty)));
+    });
+    for (const [pid, qty] of needed) {
+      const p = DB.products.find((x) => x.id === pid);
+      if (p && qty > num(p.stock)) {
+        toast(`Not enough stock for ${p.name}: ${num(p.stock)} available, ${qty} on this bill`, 'error');
+        return;
+      }
+    }
+  }
   const received = d.type === 'estimate' ? 0 : Math.max(0, num(d.received));
   const partyName = (d.party.name || '').trim() || 'Walk-in Customer';
   const inv = {
@@ -1496,7 +1514,7 @@ function openProductModal(id, forBill) {
         <div class="field"><label>Unit</label><select class="input" name="unit">${unitOptions(data.unit)}</select></div>
         <div class="field"><label>Purchase cost</label><input class="input" name="cost" type="number" min="0" step="any" value="${num(data.cost)}"></div>
         <div class="field"><label>Selling price</label><input class="input" name="price" type="number" min="0" step="any" value="${num(data.price)}"></div>
-        <div class="field"><label>Stock quantity</label><input class="input" name="stock" type="number" step="any" value="${num(data.stock)}"><small>Changes are logged as manual adjustment.</small></div>
+        <div class="field"><label>Stock quantity</label><input class="input" name="stock" type="number" min="0" step="any" value="${num(data.stock)}"><small>Changes are logged as manual adjustment.</small></div>
         <div class="field"><label>Low stock alert at</label><input class="input" name="lowStock" type="number" min="0" step="any" value="${num(data.lowStock)}"></div>
         <div class="field"><label>Options</label>
           <label class="check"><input type="checkbox" name="vat" ${data.vat !== false ? 'checked' : ''}> Apply VAT</label>
@@ -1524,6 +1542,7 @@ function openProductModal(id, forBill) {
       vat: form.elements.vat.checked,
       track: form.elements.track.checked,
     };
+    if (payload.stock < 0) { toast('Stock cannot be negative', 'warn'); return; }
     if (p) {
       const oldStock = num(p.stock);
       Object.assign(p, payload);
@@ -1885,9 +1904,14 @@ function openPurchaseView(id) {
 function deletePurchase(id) {
   const p = DB.purchases.find((x) => x.id === id);
   if (!p) return;
-  for (const it of p.items) {
+  const needed = new Map();
+  p.items.forEach((it) => {
     const prod = DB.products.find((x) => x.id === it.productId);
-    if (prod && prod.track !== false && num(prod.stock) < num(it.qty)) {
+    if (prod && prod.track !== false) needed.set(prod.id, r2((needed.get(prod.id) || 0) + num(it.qty)));
+  });
+  for (const [pid, qty] of needed) {
+    const prod = DB.products.find((x) => x.id === pid);
+    if (prod && num(prod.stock) < qty) {
       toast(`Cannot delete: ${prod.name} stock has already been used`, 'error');
       return;
     }
