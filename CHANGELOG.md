@@ -13,6 +13,14 @@ All notable changes to this project are documented here. The format is based on 
 - Multi-store support.
 - Optional encrypted backup to a location the user chooses.
 
+## [1.2.1] - 2026-11-03
+
+### Changed
+
+- New **KS** app icon with a navy, teal and gold design for the home screen and browser tab.
+- Installed app and browser title now use the name **Billing Nepal**.
+- Default sidebar mark now shows the **KS** logo.
+
 ## [1.2.0] - 2026-11-03
 
 ### Added

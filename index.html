@@ -18,18 +18,20 @@
   } catch (e) {}
 })();
 </script>
-<title>Offline Billing Nepal — Free VAT / PAN billing, inventory &amp; stock</title>
+<title>Billing Nepal — Free VAT / PAN billing, inventory &amp; stock</title>
 <meta name="description" content="Free, fully offline billing app for Nepal. VAT and PAN invoices, inventory, stock management, purchases, customers and reports. Works for kirana shops, hotels, offices and companies. No internet, no subscription.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231d4ed8'/><text x='32' y='45' font-size='34' text-anchor='middle' fill='white' font-family='Arial'>₨</text></svg>">
+<meta name="application-name" content="Billing Nepal">
+<link rel="icon" href="./icons/logo-mark.svg" type="image/svg+xml">
+<link rel="icon" href="./icons/icon-192-ks.png" sizes="192x192" type="image/png">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-ks.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Billing Nepal">
 <style>
 /* ============================================================
-   Offline Billing Nepal — styles
+   Billing Nepal — styles
    ============================================================ */
 * { box-sizing: border-box; }
 :root {
@@ -80,10 +82,12 @@ h1, h2, h3, h4 { margin: 0; }
 .brand-logo {
   width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex: 0 0 44px;
   display: grid; place-items: center; color: #fff; font-size: 22px; font-weight: 800;
-  background: linear-gradient(135deg, #2563eb, #0ea5e9);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, .35);
+  background: linear-gradient(145deg, #061a33 0%, #0a3350 52%, #0e7490 100%);
+  border: 1.5px solid rgba(246, 196, 83, .72);
+  box-shadow: 0 6px 18px rgba(14, 116, 144, .38), inset 0 0 0 2px rgba(255, 255, 255, .04);
 }
 .brand-logo img { width: 100%; height: 100%; object-fit: cover; }
+.brand-mark { font-size: 17px; font-weight: 900; letter-spacing: -.06em; line-height: 1; text-shadow: 0 2px 6px rgba(0, 0, 0, .38); }
 .brand-text { min-width: 0; }
 .brand-name { color: #fff; font-weight: 700; font-size: 14px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand-sub { font-size: 10.5px; color: #93a4bd; margin-top: 2px; letter-spacing: .02em; }
@@ -615,7 +619,7 @@ body.modal-open { overflow: hidden; }
 
 <script>
 /* ============================================================
-   Offline Billing Nepal — single-file, zero-dependency app
+   Billing Nepal — single-file, zero-dependency app
    Data stays in this browser (localStorage). No internet needed.
    ============================================================ */
 
@@ -631,7 +635,7 @@ const money = (n) => `${esc(S().currency || 'Rs.')} ${fmt(n)}`;
 const pad2 = (n) => String(n).padStart(2, '0');
 const pad4 = (n) => String(n).padStart(4, '0');
 const ico = (name) => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 const THEME_KEY = 'offline-billing-nepal-theme';
 let deferredInstallPrompt = null;
 
@@ -958,14 +962,14 @@ function renderSidebar() {
   const s = S();
   const logo = s.logo
     ? `<img src="${esc(s.logo)}" alt="logo">`
-    : `<span>₨</span>`;
+    : `<span class="brand-mark">KS</span>`;
   const nav = NAV_ITEMS.map((n) => `<button type="button" class="nav-link ${currentPage === n.page ? 'active' : ''}" data-page="${n.page}">${ico(n.icon)}<span>${n.label}</span></button>`).join('');
   $('#sidebar').innerHTML = `
     <div class="brand">
       <div class="brand-logo">${logo}</div>
       <div class="brand-text">
         <div class="brand-name">${esc(s.businessName || 'My Business')}</div>
-        <div class="brand-sub">Offline Billing Nepal</div>
+        <div class="brand-sub">Billing Nepal</div>
       </div>
     </div>
     <nav class="nav">${nav}</nav>
@@ -984,7 +988,7 @@ function render() {
   if (p.mount) p.mount();
   const t = todayISO();
   $('#todayLabel').innerHTML = `<strong>${formatDate(t)}</strong><br>${S().showBS ? bsShort(t) + ' BS' : '&nbsp;'}`;
-  document.title = `${p.title} · Offline Billing Nepal`;
+  document.title = `${p.title} · Billing Nepal`;
 }
 
 function navigate(page) {
@@ -2505,7 +2509,7 @@ function settingsHTML() {
         </section>
         <section class="card">
           <div class="card-head"><div><h2>About</h2><p>Free &amp; open source</p></div></div>
-          <p class="muted">Offline Billing Nepal is a free, MIT-licensed billing app for Nepali shops, hotels, offices and companies. It works without internet, keeps data on your device, supports VAT and PAN bills, installs on mobile, and imports products or contacts from Excel/CSV.</p>
+          <p class="muted">Billing Nepal is a free, MIT-licensed billing app for Nepali shops, hotels, offices and companies. It works without internet, keeps data on your device, supports VAT and PAN bills, installs on mobile, and imports products or contacts from Excel/CSV.</p>
           <div class="muted">Version ${APP_VERSION} · Data schema v${DB.version}</div>
         </section>
       </div>
@@ -2575,7 +2579,7 @@ function resizeImage(file, maxSize, cb) {
 }
 
 function exportBackup() {
-  const data = { ...DB, exportedAt: new Date().toISOString(), app: 'Offline Billing Nepal' };
+  const data = { ...DB, exportedAt: new Date().toISOString(), app: 'Billing Nepal' };
   download(`billing-backup-${todayISO()}.json`, JSON.stringify(data, null, 2), 'application/json');
   toast('Backup downloaded');
 }
@@ -2803,7 +2807,7 @@ function reportTemplate(d) {
     <table class="rep-table"><thead><tr><th>Product</th><th class="r">Qty sold</th><th class="r">Sales (excl. VAT)</th></tr></thead><tbody>
       ${d.top.map((t) => `<tr><td>${esc(t.name)}</td><td class="r">${fmt(t.qty)}</td><td class="r">${money(t.amount)}</td></tr>`).join('') || '<tr><td colspan="3">No sales.</td></tr>'}
     </tbody></table>
-    <div class="rep-foot">Generated on ${formatDate(todayISO())} · Offline Billing Nepal. This report is a working aid; verify VAT figures before filing.</div>
+    <div class="rep-foot">Generated on ${formatDate(todayISO())} · Billing Nepal. This report is a working aid; verify VAT figures before filing.</div>
   </div>`;
 }
 
@@ -3221,7 +3225,7 @@ function loadDemoData() {
 
 function openWelcome() {
   openModal({
-    title: 'Welcome to Offline Billing Nepal',
+    title: 'Welcome to Billing Nepal',
     wide: true,
     body: `<div class="welcome">
       <div class="welcome-hero">

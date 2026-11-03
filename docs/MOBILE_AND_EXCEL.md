@@ -1,6 +1,6 @@
 # Mobile install, data storage and Excel/CSV import
 
-This guide explains how to install **Offline Billing Nepal** on a phone, where the data is stored, how to back it up, and how to add products or contacts from Excel/CSV.
+This guide explains how to install **Billing Nepal** on a phone, where the data is stored, how to back it up, and how to add products or contacts from Excel/CSV.
 
 ---
 

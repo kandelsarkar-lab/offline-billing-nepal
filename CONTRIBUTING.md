@@ -1,4 +1,4 @@
-# Contributing to Offline Billing Nepal
+# Contributing to Billing Nepal
 
 Thank you for helping make billing easier for small businesses in Nepal. This project is free, offline-first, and intentionally simple to run: **there is no build step and no server**.
 

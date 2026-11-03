@@ -1,5 +1,5 @@
 {
-  "name": "Offline Billing Nepal",
+  "name": "Billing Nepal",
   "short_name": "Billing Nepal",
   "description": "Free, fully offline VAT/PAN billing, inventory and stock management for Nepal. Works on phone, tablet and computer.",
   "id": "./",
@@ -8,24 +8,24 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#f1f5f9",
-  "theme_color": "#0f172a",
+  "theme_color": "#061a33",
   "lang": "en",
   "categories": ["business", "finance", "productivity"],
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "./icons/icon-192-ks.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "./icons/icon-512-ks.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./icons/icon-maskable-512.png",
+      "src": "./icons/icon-maskable-512-ks.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

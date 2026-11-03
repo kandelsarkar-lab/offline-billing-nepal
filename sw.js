@@ -1,14 +1,15 @@
-/* Offline Billing Nepal — service worker
+/* Billing Nepal — service worker
    Keeps the app shell available offline after the first visit. */
-const CACHE_NAME = 'offline-billing-nepal-v4';
+const CACHE_NAME = 'offline-billing-nepal-v5';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/logo-mark.svg',
+  './icons/icon-192-ks.png',
+  './icons/icon-512-ks.png',
+  './icons/icon-maskable-512-ks.png',
+  './icons/apple-touch-icon-ks.png'
 ];
 
 self.addEventListener('install', (event) => {

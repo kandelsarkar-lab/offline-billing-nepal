@@ -1,6 +1,6 @@
 # User Guide
 
-This guide explains how to set up and use **Offline Billing Nepal** for a kirana shop, hotel, restaurant, office, company or service business. The app is a single `index.html` file. It works without internet and stores data in your browser.
+This guide explains how to set up and use **Billing Nepal** for a kirana shop, hotel, restaurant, office, company or service business. The app is a single `index.html` file. It works without internet and stores data in your browser.
 
 > **Before you start:** the app stores data only in the browser on the current device. Export a JSON backup regularly. See [Backup and restore](#backup-and-restore).
 

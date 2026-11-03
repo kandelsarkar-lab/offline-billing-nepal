@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve Offline Billing Nepal. Please do not attach real customer data or backups containing personal information.
+        Thanks for helping improve Billing Nepal. Please do not attach real customer data or backups containing personal information.
 
   - type: textarea
     id: what-happened

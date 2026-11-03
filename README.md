@@ -1,8 +1,12 @@
 <p align="center">
-  <img src="screenshots/dashboard.png" alt="Offline Billing Nepal dashboard" width="900">
+  <img src="icons/icon-192-ks.png" alt="Billing Nepal KS logo" width="96" height="96">
 </p>
 
-<h1 align="center">Offline Billing Nepal</h1>
+<h1 align="center">Billing Nepal</h1>
+
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="Billing Nepal dashboard" width="900">
+</p>
 
 <p align="center">
   <strong>Free, fully offline billing, inventory and VAT/PAN invoicing for Nepal.</strong><br>
@@ -32,7 +36,7 @@ Small businesses in Nepal often need a simple way to:
 - see **sales, VAT and profit reports**,
 - and keep working when the internet is down.
 
-Most billing software is paid, requires a server, or needs an internet connection. **Offline Billing Nepal** is a single `index.html` file that runs in any modern browser. Copy it to a laptop, open it, and start billing.
+Most billing software is paid, requires a server, or needs an internet connection. **Billing Nepal** is a single `index.html` file that runs in any modern browser. Copy it to a laptop, open it, and start billing.
 
 It is designed for **kirana shops, hotels and restaurants, offices, companies, wholesalers, and service providers**.
 
