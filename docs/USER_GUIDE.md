@@ -153,7 +153,7 @@ The left sidebar (or the menu button on mobile) contains:
 | **Purchases** | Record stock bought from suppliers, including VAT. |
 | **Customers** | Customers and suppliers with contact and PAN/VAT details. |
 | **Reports** | Sales, VAT, profit, top products, daily sales and CSV exports. |
-| **Settings** | Business profile, invoice preferences, backup, restore and reset. |
+| **Settings** | Business profile, appearance, invoice preferences, backup, restore and reset. |
 
 The top bar shows today's AD and BS dates and a **New Bill** shortcut.
 
@@ -187,6 +187,12 @@ Click **Save settings**.
 In **Settings**, choose a PNG, JPG or WebP image under the logo preview. The app resizes it and stores it on the device. Click **Remove logo** to delete it.
 
 > A very large logo can make the saved data bigger. Use a simple logo under a few hundred kilobytes.
+
+### Choose light or dark mode
+
+Open **Settings → Appearance** and choose **Light** or **Dark**. You can also use the moon/sun button in the top bar to switch quickly.
+
+Your choice is saved on this device. Changing the theme does not affect products, invoices, customers or backups.
 
 ---
 

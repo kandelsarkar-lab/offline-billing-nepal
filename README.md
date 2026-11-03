@@ -100,6 +100,7 @@ It is designed for **kirana shops, hotels and restaurants, offices, companies, w
 ### Interface
 
 - Responsive layout for laptop, tablet and mobile.
+- **Light and dark themes**, with a quick toggle in the top bar.
 - Fast keyboard-friendly forms.
 - Clean, modern UI with Nepal-specific dates, currency and number formatting.
 - No external fonts, icons, CDNs or JavaScript libraries.

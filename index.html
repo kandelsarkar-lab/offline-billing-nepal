@@ -3,7 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0f172a">
+<meta id="themeColor" name="theme-color" content="#f1f5f9">
+<script>
+(function () {
+  try {
+    var key = 'offline-billing-nepal-theme';
+    var theme = localStorage.getItem(key);
+    if (theme !== 'light' && theme !== 'dark') {
+      theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.dataset.theme = theme;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0b1220' : '#f1f5f9');
+  } catch (e) {}
+})();
+</script>
 <title>Offline Billing Nepal — Free VAT / PAN billing, inventory &amp; stock</title>
 <meta name="description" content="Free, fully offline billing app for Nepal. VAT and PAN invoices, inventory, stock management, purchases, customers and reports. Works for kirana shops, hotels, offices and companies. No internet, no subscription.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231d4ed8'/><text x='32' y='45' font-size='34' text-anchor='middle' fill='white' font-family='Arial'>₨</text></svg>">
@@ -31,6 +45,9 @@
   --danger: #dc2626;
   --sidebar: #0b1220;
   --shadow: 0 1px 2px rgba(15, 23, 42, .05);
+  --surface-2: #f8fafc;
+  --surface-3: #f1f5f9;
+  --theme-ring: rgba(37, 99, 235, .12);
 }
 html, body { margin: 0; padding: 0; }
 body {
@@ -124,6 +141,8 @@ h1, h2, h3, h4 { margin: 0; }
 .icon-btn:hover { background: #f1f5f9; color: #1e293b; }
 .icon-btn.danger:hover { background: #fee2e2; color: #b91c1c; }
 .icon-btn .ico { width: 16px; height: 16px; }
+.theme-toggle { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--card); color: var(--muted); }
+.theme-toggle:hover { background: var(--surface-2); color: var(--text); }
 
 /* ---------- cards / layout ---------- */
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 18px; min-width: 0; }
@@ -166,6 +185,7 @@ select.input { appearance: auto; }
   margin-top: 12px; padding: 9px 11px; border-radius: 9px; font-size: 11.5px;
   background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe;
 }
+.notice.success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
 .form-actions { margin-top: 16px; display: flex; gap: 8px; }
 
 /* ---------- toolbar ---------- */
@@ -273,7 +293,25 @@ tbody tr:hover { background: #f8fafc; }
 .install-step { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: #f8fafc; }
 .install-step ol { margin: 8px 0 0 18px; padding: 0; color: #334155; font-size: 12px; }
 .install-step li { margin: 4px 0; }
+.theme-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.theme-choice {
+  display: flex; align-items: center; gap: 10px; text-align: left; padding: 10px 11px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2);
+  color: var(--text); transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.theme-choice:hover { border-color: #94a3b8; }
+.theme-choice.active { border-color: var(--brand); background: var(--surface-3); box-shadow: 0 0 0 3px var(--theme-ring); }
+.theme-swatch {
+  width: 42px; height: 32px; flex: 0 0 42px; border-radius: 7px; border: 1px solid #cbd5e1;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0); position: relative; overflow: hidden;
+}
+.theme-swatch::after { content: ""; position: absolute; left: 6px; top: 6px; width: 12px; height: 20px; border-radius: 3px; background: #1d4ed8; opacity: .8; }
+.theme-swatch.dark { border-color: #334155; background: linear-gradient(135deg, #0b1220, #1e293b); }
+.theme-swatch.dark::after { background: #60a5fa; }
+.theme-choice strong { display: block; font-size: 12.5px; line-height: 1.2; }
+.theme-choice small { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; }
 @media (max-width: 640px) { .install-grid { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .theme-choices { grid-template-columns: 1fr; } }
 
 /* ---------- preview / modal ---------- */
 .preview-note { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; }
@@ -379,6 +417,91 @@ body.modal-open { overflow: hidden; }
 .rep-sheet h3 { font-size: 11px; margin: 12px 0 4px; }
 .rep-foot { margin-top: 14px; font-size: 8.5px; color: #6b7280; text-align: center; }
 
+/* ---------- dark mode ---------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #08111f;
+  --card: #111c2e;
+  --text: #e5edf7;
+  --muted: #94a3b8;
+  --line: #243449;
+  --brand: #60a5fa;
+  --brand-2: #38bdf8;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --sidebar: #070d18;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .35);
+  --surface-2: #0f1a2b;
+  --surface-3: #162235;
+  --theme-ring: rgba(96, 165, 250, .18);
+}
+[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+[data-theme="dark"] .topbar { background: rgba(8, 17, 31, .9); }
+[data-theme="dark"] .today strong { color: #cbd5e1; }
+[data-theme="dark"] .btn { background: #162235; color: #e2e8f0; border-color: #2a3b52; }
+[data-theme="dark"] .btn:hover { background: #1b2a40; border-color: #3b506b; }
+[data-theme="dark"] .btn.primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: #1d4ed8; color: #fff; }
+[data-theme="dark"] .btn.primary:hover { background: linear-gradient(135deg, #1d4ed8, #1e40af); }
+[data-theme="dark"] .btn.success { background: #059669; border-color: #059669; color: #fff; }
+[data-theme="dark"] .btn.success:hover { background: #047857; }
+[data-theme="dark"] .btn.ghost { background: transparent; border-color: transparent; color: #cbd5e1; }
+[data-theme="dark"] .btn.ghost:hover { background: #162235; }
+[data-theme="dark"] .btn.danger { background: #2a1414; border-color: #7f1d1d; color: #fca5a5; }
+[data-theme="dark"] .btn.danger:hover { background: #3b1a1a; }
+[data-theme="dark"] .icon-btn { color: #94a3b8; }
+[data-theme="dark"] .icon-btn:hover { background: #162235; color: #e2e8f0; }
+[data-theme="dark"] .icon-btn.danger:hover { background: #3b1a1a; color: #fca5a5; }
+[data-theme="dark"] .stat { background: var(--card); }
+[data-theme="dark"] .stat::after { background: rgba(37, 99, 235, .18); }
+[data-theme="dark"] .stat.tone-blue::after { background: rgba(37, 99, 235, .22); }
+[data-theme="dark"] .stat.tone-green::after { background: rgba(16, 185, 129, .18); }
+[data-theme="dark"] .stat.tone-amber::after { background: rgba(245, 158, 11, .16); }
+[data-theme="dark"] .stat.tone-violet::after { background: rgba(139, 92, 246, .18); }
+[data-theme="dark"] .field > label, [data-theme="dark"] .check { color: #cbd5e1; }
+[data-theme="dark"] .input { background: #0f1a2b; border-color: #2a3b52; color: var(--text); }
+[data-theme="dark"] .input::placeholder { color: #64748b; }
+[data-theme="dark"] .input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, .15); }
+[data-theme="dark"] .notice { background: #10233b; border-color: #1e3a5f; color: #bfdbfe; }
+[data-theme="dark"] .notice.success { background: #0f2a1d; border-color: #166534; color: #86efac; }
+[data-theme="dark"] .table-wrap th { background: #0f1a2b; color: #94a3b8; }
+[data-theme="dark"] .table-wrap td { border-bottom-color: #1c2a3d; }
+[data-theme="dark"] .table-wrap tbody tr:hover { background: #162235; }
+[data-theme="dark"] .badge.green { background: rgba(34, 197, 94, .16); color: #86efac; }
+[data-theme="dark"] .badge.red { background: rgba(239, 68, 68, .16); color: #fca5a5; }
+[data-theme="dark"] .badge.amber { background: rgba(245, 158, 11, .16); color: #fcd34d; }
+[data-theme="dark"] .badge.blue { background: rgba(59, 130, 246, .16); color: #93c5fd; }
+[data-theme="dark"] .badge.gray { background: #1b2a40; color: #cbd5e1; }
+[data-theme="dark"] .red-text { color: #f87171 !important; }
+[data-theme="dark"] .green-text { color: #34d399 !important; }
+[data-theme="dark"] .inv-sheet .red-text, [data-theme="dark"] .rep-sheet .red-text { color: #b91c1c !important; }
+[data-theme="dark"] .inv-sheet .green-text, [data-theme="dark"] .rep-sheet .green-text { color: #047857 !important; }
+[data-theme="dark"] .empty .big { color: #475569; }
+[data-theme="dark"] .list-item { border-bottom-color: #1c2a3d; }
+[data-theme="dark"] .chart-val { color: #94a3b8; }
+[data-theme="dark"] .segmented { background: #162235; }
+[data-theme="dark"] .segmented button { color: #94a3b8; }
+[data-theme="dark"] .segmented button.active { background: #1b2a40; color: #93c5fd; }
+[data-theme="dark"] .cell-input { background: #0f1a2b; color: #e2e8f0; }
+[data-theme="dark"] .cell-input:focus { background: #162235; }
+[data-theme="dark"] .totals > div, [data-theme="dark"] .pay-lines { color: #94a3b8; }
+[data-theme="dark"] .totals > div b, [data-theme="dark"] .pay-lines b, [data-theme="dark"] .pay-summary b { color: #e2e8f0; }
+[data-theme="dark"] .totals .grand b { color: #93c5fd; }
+[data-theme="dark"] .pay-summary, [data-theme="dark"] .install-step, [data-theme="dark"] .welcome-item, [data-theme="dark"] .logo-preview { background: #0f1a2b; }
+[data-theme="dark"] .logo-preview { border-color: #334155; }
+[data-theme="dark"] .install-step ol { color: #cbd5e1; }
+[data-theme="dark"] .welcome-item .ico { color: #60a5fa; }
+[data-theme="dark"] .modal { background: #111c2e; border: 1px solid #243449; }
+[data-theme="dark"] .modal-backdrop { background: rgba(2, 6, 23, .78); }
+[data-theme="dark"] .invoice-preview { background: #08111f; }
+[data-theme="dark"] .toast { background: #1e293b; border: 1px solid #334155; }
+[data-theme="dark"] .nav-overlay { background: rgba(2, 6, 23, .7); }
+[data-theme="dark"] .hero .btn { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .22); color: #fff; }
+[data-theme="dark"] .hero .btn:hover { background: rgba(255, 255, 255, .18); }
+[data-theme="dark"] .hero .btn.primary { background: #fff; color: #1d4ed8; border-color: #fff; }
+[data-theme="dark"] .hero .btn.primary:hover { background: #eff6ff; }
+[data-theme="dark"] .theme-swatch { border-color: #334155; }
+
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {
   .grid-2 { grid-template-columns: 1fr; }
@@ -453,6 +576,8 @@ body.modal-open { overflow: hidden; }
   <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
   <symbol id="i-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></symbol>
   <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
 </svg>
 
 <div id="app">
@@ -469,6 +594,9 @@ body.modal-open { overflow: hidden; }
       </div>
       <div class="top-actions">
         <div class="today" id="todayLabel"></div>
+        <button type="button" class="icon-btn theme-toggle" id="themeToggle" data-act="toggle-theme" aria-label="Switch to dark mode" title="Switch to dark mode">
+          <svg class="ico"><use href="#i-moon"></use></svg>
+        </button>
         <button type="button" class="btn primary" data-act="new-bill">
           <svg class="ico"><use href="#i-plus"></use></svg><span>New Bill</span>
         </button>
@@ -503,8 +631,48 @@ const money = (n) => `${esc(S().currency || 'Rs.')} ${fmt(n)}`;
 const pad2 = (n) => String(n).padStart(2, '0');
 const pad4 = (n) => String(n).padStart(4, '0');
 const ico = (name) => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.2.0';
+const THEME_KEY = 'offline-billing-nepal-theme';
 let deferredInstallPrompt = null;
+
+function storedTheme() {
+  try {
+    const value = localStorage.getItem(THEME_KEY);
+    return value === 'dark' || value === 'light' ? value : null;
+  } catch (e) {
+    return null;
+  }
+}
+function getTheme() {
+  const attr = document.documentElement.dataset.theme;
+  if (attr === 'dark' || attr === 'light') return attr;
+  return storedTheme() || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+function updateThemeUI() {
+  const theme = getTheme();
+  const dark = theme === 'dark';
+  const meta = $('#themeColor');
+  if (meta) meta.setAttribute('content', dark ? '#0b1220' : '#f1f5f9');
+  const button = $('#themeToggle');
+  if (button) {
+    button.innerHTML = ico(dark ? 'sun' : 'moon');
+    const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+    button.setAttribute('aria-label', label);
+    button.title = label;
+  }
+  $$('[data-act="set-theme"]').forEach((el) => el.classList.toggle('active', el.dataset.id === theme));
+}
+function applyTheme(theme, persist = true) {
+  const next = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  if (persist) {
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  }
+  updateThemeUI();
+}
+function toggleTheme() {
+  applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+}
 
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
@@ -902,6 +1070,8 @@ document.addEventListener('keydown', (e) => {
 function handleAction(action, id, el, idx) {
   switch (action) {
     case 'close-modal': closeModal(); break;
+    case 'toggle-theme': toggleTheme(); break;
+    case 'set-theme': applyTheme(id); break;
     case 'new-bill': draft = null; navigate('billing'); break;
     case 'bill-type': if (draft) { draft.type = id; render(); } break;
     case 'add-item': addBillItem(); break;
@@ -2286,6 +2456,20 @@ function settingsHTML() {
       </section>
       <div class="stack">
         <section class="card">
+          <div class="card-head"><div><h2>Appearance</h2><p>Choose your theme</p></div></div>
+          <div class="theme-choices">
+            <button type="button" class="theme-choice ${getTheme() === 'light' ? 'active' : ''}" data-act="set-theme" data-id="light">
+              <span class="theme-swatch"></span>
+              <span><strong>Light</strong><small>Bright background</small></span>
+            </button>
+            <button type="button" class="theme-choice ${getTheme() === 'dark' ? 'active' : ''}" data-act="set-theme" data-id="dark">
+              <span class="theme-swatch dark"></span>
+              <span><strong>Dark</strong><small>Easy on the eyes</small></span>
+            </button>
+          </div>
+          <p class="muted" style="margin-top:10px">You can also use the moon/sun button in the top bar. Your choice is saved on this device.</p>
+        </section>
+        <section class="card">
           <div class="card-head"><div><h2>Mobile app</h2><p>Install on your phone</p></div></div>
           <p class="muted">Install this app on your phone home screen. It opens like a normal app and keeps working offline. Your data stays on this device.</p>
           <div class="stack-buttons">
@@ -2914,7 +3098,7 @@ function openInstallHelp() {
         <div class="install-step"><strong>Android — Chrome</strong><ol><li>Open the live app in Chrome.</li><li>Tap the three-dot menu.</li><li>Tap <b>Add to Home screen</b> or <b>Install app</b>.</li><li>Confirm.</li></ol></div>
         <div class="install-step"><strong>iPhone — Safari</strong><ol><li>Open the live app in Safari.</li><li>Tap the Share button.</li><li>Scroll and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol></div>
       </div>
-      <div class="notice" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534">Backup regularly: Settings → Export backup (.json). Clearing browser data deletes the app data.</div>
+      <div class="notice success">Backup regularly: Settings → Export backup (.json). Clearing browser data deletes the app data.</div>
     </div>`,
     footer: `<button type="button" class="btn ghost" data-act="close-modal">Close</button><button type="button" class="btn primary" data-act="install-app">Try install now</button>`,
   });
@@ -3071,7 +3255,16 @@ const PAGES = {
 
 function init() {
   loadDB();
+  applyTheme(getTheme(), false);
   render();
+  if (window.matchMedia) {
+    const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const syncSystemTheme = () => {
+      if (!storedTheme()) applyTheme(themeQuery.matches ? 'dark' : 'light', false);
+    };
+    if (themeQuery.addEventListener) themeQuery.addEventListener('change', syncSystemTheme);
+    else if (themeQuery.addListener) themeQuery.addListener(syncSystemTheme);
+  }
   const menuBtn = $('#menuBtn');
   if (menuBtn) menuBtn.addEventListener('click', () => $('#app').classList.toggle('nav-open'));
   const overlay = $('#navOverlay');

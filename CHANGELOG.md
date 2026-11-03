@@ -13,6 +13,14 @@ All notable changes to this project are documented here. The format is based on 
 - Multi-store support.
 - Optional encrypted backup to a location the user chooses.
 
+## [1.2.0] - 2026-11-03
+
+### Added
+
+- Light and dark theme options in **Settings → Appearance**.
+- A quick moon/sun theme toggle in the top bar.
+- Theme preference is saved on the device and follows the system theme until changed.
+
 ## [1.1.1] - 2026-11-03
 
 ### Fixed

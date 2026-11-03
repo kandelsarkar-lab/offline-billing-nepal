@@ -1,6 +1,6 @@
 /* Offline Billing Nepal — service worker
    Keeps the app shell available offline after the first visit. */
-const CACHE_NAME = 'offline-billing-nepal-v3';
+const CACHE_NAME = 'offline-billing-nepal-v4';
 const APP_SHELL = [
   './',
   './index.html',
