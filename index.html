@@ -503,7 +503,7 @@ const money = (n) => `${esc(S().currency || 'Rs.')} ${fmt(n)}`;
 const pad2 = (n) => String(n).padStart(2, '0');
 const pad4 = (n) => String(n).padStart(4, '0');
 const ico = (name) => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.1.1';
 let deferredInstallPrompt = null;
 
 window.addEventListener('beforeinstallprompt', (event) => {
@@ -829,6 +829,7 @@ function navigate(page) {
 }
 
 /* ---------------- modal / toast ---------------- */
+let modalPointerStartedOnBackdrop = false;
 function openModal({ title, body, footer = '', wide = false, onMount = null }) {
   $('#modalRoot').innerHTML = `
     <div class="modal-backdrop" id="modalBackdrop">
@@ -843,6 +844,12 @@ function openModal({ title, body, footer = '', wide = false, onMount = null }) {
     </div>`;
   document.body.classList.add('modal-open');
   if (onMount) onMount($('#modalRoot'));
+  const form = $('#modalRoot form');
+  if (form) {
+    const markDirty = () => { form.dataset.dirty = '1'; };
+    form.addEventListener('input', markDirty);
+    form.addEventListener('change', markDirty);
+  }
   setTimeout(() => {
     const f = $('#modalRoot .modal-body input:not([type="hidden"]), #modalRoot .modal-body select, #modalRoot .modal-body textarea');
     if (f && !f.readOnly && !f.disabled) f.focus();
@@ -851,6 +858,7 @@ function openModal({ title, body, footer = '', wide = false, onMount = null }) {
 function closeModal() {
   $('#modalRoot').innerHTML = '';
   document.body.classList.remove('modal-open');
+  modalPointerStartedOnBackdrop = false;
 }
 function toast(message, type = 'ok') {
   const el = document.createElement('div');
@@ -862,8 +870,22 @@ function toast(message, type = 'ok') {
 }
 
 /* ---------------- global events ---------------- */
+document.addEventListener('pointerdown', (e) => {
+  modalPointerStartedOnBackdrop = !!(e.target.classList && e.target.classList.contains('modal-backdrop'));
+});
 document.addEventListener('click', (e) => {
-  if (e.target.classList && e.target.classList.contains('modal-backdrop')) { closeModal(); return; }
+  if (e.target.classList && e.target.classList.contains('modal-backdrop')) {
+    if (!modalPointerStartedOnBackdrop) return;
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim()) return;
+    const form = $('#modalRoot form');
+    if (form && form.dataset.dirty === '1') {
+      toast('You have unsaved changes. Use Cancel or X to close.', 'warn');
+      return;
+    }
+    closeModal();
+    return;
+  }
   const nav = e.target.closest('[data-page]');
   if (nav) { e.preventDefault(); navigate(nav.dataset.page); return; }
   const actionEl = e.target.closest('[data-act]');

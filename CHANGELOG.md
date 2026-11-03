@@ -13,6 +13,13 @@ All notable changes to this project are documented here. The format is based on 
 - Multi-store support.
 - Optional encrypted backup to a location the user chooses.
 
+## [1.1.1] - 2026-11-03
+
+### Fixed
+
+- Prevented clicking or dragging outside an add/edit form from accidentally closing it and losing unsaved text.
+- Backdrop clicks now only close a form when the click starts and ends on the backdrop and the form has not been changed.
+
 ## [1.1.0] - 2026-11-02
 
 ### Added
