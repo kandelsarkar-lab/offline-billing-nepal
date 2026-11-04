@@ -302,11 +302,14 @@ The customer details are copied onto the invoice.
 
 ### Step 4: Add items
 
-1. Select a product or service.
-2. Enter the quantity.
-3. Check the rate. It is filled from the selling price, but you can change it.
-4. Enter a discount percentage if needed.
-5. Click **Add**.
+1. Start typing a product name, SKU or category in the product search box.
+2. Use **↑** and **↓** to move through the matches, then press **Enter** to select one. You can also click a match.
+3. Enter the quantity.
+4. Check the rate. It is filled from the selling price, but you can change it.
+5. Enter a discount percentage if needed.
+6. Press **Enter** in the quantity, rate or discount field to add the item, or click **Add**.
+
+After an item is added, the cursor returns to the product search box so you can type the next item immediately. Press **Esc** to close the suggestions without selecting anything.
 
 You can edit the quantity, rate and discount directly in the item table. The totals update immediately.
 

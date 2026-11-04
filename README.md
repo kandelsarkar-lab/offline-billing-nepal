@@ -49,6 +49,7 @@ It is designed for **kirana shops, hotels and restaurants, offices, companies, w
 - **VAT Bill** — adds VAT (13% by default, configurable) to taxable items.
 - **PAN Bill** — no VAT, useful for PAN-registered customers.
 - **Estimate / Quotation** — does not deduct stock.
+- **Keyboard product search** — type a product name, SKU or category instead of scrolling; arrow keys and Enter work.
 - Line-level quantity, rate and discount.
 - Partial payments, balance due and change to return.
 - Invoice numbering based on the **Bikram Sambat fiscal year** (e.g. `INV-2083-84-0001`).

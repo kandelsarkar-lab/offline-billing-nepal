@@ -268,6 +268,30 @@ tbody tr:hover { background: #f8fafc; }
 .segmented button { border: 0; background: transparent; padding: 7px 11px; border-radius: 8px; font-size: 11.5px; font-weight: 700; color: #64748b; }
 .segmented button.active { background: #fff; color: #1d4ed8; box-shadow: 0 1px 3px rgba(15, 23, 42, .12); }
 .item-add { display: grid; grid-template-columns: minmax(180px, 2fr) 84px 105px 84px auto; gap: 8px; margin-bottom: 12px; }
+.product-picker { position: relative; min-width: 0; }
+.product-search-box { position: relative; }
+.product-search-box .ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #94a3b8; pointer-events: none; }
+.product-search-box .input { padding-left: 32px; }
+.product-results {
+  position: absolute; z-index: 45; left: 0; top: calc(100% + 5px); width: max(100%, 350px);
+  max-width: calc(100vw - 44px); max-height: 280px; overflow: auto; background: var(--card);
+  border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 16px 40px rgba(15, 23, 42, .2);
+}
+.product-results[hidden], .product-option[hidden], .product-empty[hidden] { display: none; }
+.product-option {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 11px; border: 0; border-bottom: 1px solid var(--line); background: transparent;
+  color: var(--text); text-align: left; cursor: pointer;
+}
+.product-option:last-of-type { border-bottom: 0; }
+.product-option:hover, .product-option.active { background: #eff6ff; }
+.po-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.po-main strong { font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.po-main small, .po-meta small { font-size: 10.5px; color: var(--muted); }
+.po-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; flex: 0 0 auto; }
+.po-meta b { font-size: 11.5px; color: #1d4ed8; white-space: nowrap; }
+.product-empty { padding: 14px 12px; text-align: center; font-size: 11.5px; color: var(--muted); }
+.product-empty .btn { margin-top: 8px; }
 .cell-input {
   width: 76px; border: 1px solid transparent; background: #f8fafc; border-radius: 6px;
   padding: 4px 5px; font-size: 11.5px; text-align: right; outline: none;
@@ -486,6 +510,10 @@ body.modal-open { overflow: hidden; }
 [data-theme="dark"] .segmented { background: #162235; }
 [data-theme="dark"] .segmented button { color: #94a3b8; }
 [data-theme="dark"] .segmented button.active { background: #1b2a40; color: #93c5fd; }
+[data-theme="dark"] .product-results { background: #0f1a2b; border-color: #2a3b52; box-shadow: 0 18px 40px rgba(0, 0, 0, .38); }
+[data-theme="dark"] .product-option { border-bottom-color: #1c2a3d; }
+[data-theme="dark"] .product-option:hover, [data-theme="dark"] .product-option.active { background: #162235; }
+[data-theme="dark"] .po-meta b { color: #93c5fd; }
 [data-theme="dark"] .cell-input { background: #0f1a2b; color: #e2e8f0; }
 [data-theme="dark"] .cell-input:focus { background: #162235; }
 [data-theme="dark"] .totals > div, [data-theme="dark"] .pay-lines { color: #94a3b8; }
@@ -529,8 +557,9 @@ body.modal-open { overflow: hidden; }
   .form-grid { grid-template-columns: 1fr; }
   .span-2 { grid-column: span 1; }
   .item-add { grid-template-columns: 1fr 1fr; }
-  .item-add .input:first-child { grid-column: span 2; }
+  .item-add > .product-picker { grid-column: span 2; }
   .item-add .btn { grid-column: span 2; }
+  .product-results { width: 100%; max-width: none; }
   .toolbar-row { align-items: stretch; }
   .search-box { flex-basis: 100%; }
   .welcome-grid { grid-template-columns: 1fr; }
@@ -635,7 +664,7 @@ const money = (n) => `${esc(S().currency || 'Rs.')} ${fmt(n)}`;
 const pad2 = (n) => String(n).padStart(2, '0');
 const pad4 = (n) => String(n).padStart(4, '0');
 const ico = (name) => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"></use></svg>`;
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.2';
 const THEME_KEY = 'offline-billing-nepal-theme';
 let deferredInstallPrompt = null;
 
@@ -1262,13 +1291,166 @@ function ensureDraft() {
   return draft;
 }
 
+function productPickerHTML({ inputId, listId, hiddenId, products, mode = 'sale', forBill = false, placeholder = 'Type product name or SKU…' }) {
+  const options = products.map((p) => {
+    const search = [p.name, p.sku, p.category, p.unit].filter(Boolean).join(' ').toLowerCase();
+    const stockText = p.track === false ? 'Service' : `${num(p.stock)} ${p.unit || 'pcs'} left`;
+    const value = mode === 'purchase' ? num(p.cost) : num(p.price);
+    return `<button type="button" class="product-option" role="option" aria-selected="false"
+      data-product-id="${esc(p.id)}" data-name="${esc(p.name)}" data-price="${num(p.price)}"
+      data-cost="${num(p.cost)}" data-stock="${num(p.stock)}" data-track="${p.track !== false ? 1 : 0}"
+      data-search="${esc(search)}">
+      <span class="po-main"><strong>${esc(p.name)}</strong><small>${esc([p.sku, p.category].filter(Boolean).join(' · ') || 'No SKU')}</small></span>
+      <span class="po-meta"><b>${money(value)}</b><small class="${p.track !== false && isLowStock(p) ? 'red-text' : ''}">${esc(stockText)}</small></span>
+    </button>`;
+  }).join('');
+  return `<div class="product-picker">
+    <div class="product-search-box">
+      ${ico('search')}
+      <input class="input" id="${inputId}" type="text" role="combobox" aria-label="Search products"
+        aria-autocomplete="list" aria-controls="${listId}" aria-expanded="false" autocomplete="off" placeholder="${esc(placeholder)}">
+    </div>
+    <div class="product-results" id="${listId}" role="listbox" hidden>
+      ${options}
+      <div class="product-empty" ${products.length ? 'hidden' : ''}>
+        <div>No matching product found.</div>
+        <button type="button" class="btn sm" data-act="new-product" ${forBill ? 'data-for="bill"' : ''}>${ico('plus')} Add new product</button>
+      </div>
+    </div>
+    <input type="hidden" id="${hiddenId}" value="">
+  </div>`;
+}
+
+function mountProductPicker({ inputSel, listSel, hiddenSel, rateSel, qtySel, discSel, mode = 'sale' }) {
+  const input = $(inputSel);
+  const list = $(listSel);
+  const hidden = $(hiddenSel);
+  if (!input || !list || !hidden) return;
+
+  const options = $$('.product-option', list);
+  const empty = $('.product-empty', list);
+  let matches = options.slice();
+  let active = -1;
+
+  options.forEach((opt, index) => { opt.id = `${list.id}-opt-${index}`; });
+
+  const setActive = (index) => {
+    options.forEach((opt) => {
+      opt.classList.remove('active');
+      opt.setAttribute('aria-selected', 'false');
+    });
+    active = index;
+    const opt = matches[active];
+    if (!opt) {
+      input.removeAttribute('aria-activedescendant');
+      return;
+    }
+    opt.classList.add('active');
+    opt.setAttribute('aria-selected', 'true');
+    input.setAttribute('aria-activedescendant', opt.id);
+    opt.scrollIntoView({ block: 'nearest' });
+  };
+
+  const closeList = () => {
+    list.hidden = true;
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+    active = -1;
+    options.forEach((opt) => {
+      opt.classList.remove('active');
+      opt.setAttribute('aria-selected', 'false');
+    });
+  };
+
+  const filterList = () => {
+    const terms = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    matches = options.filter((opt) => {
+      const text = opt.dataset.search || '';
+      return terms.every((term) => text.includes(term));
+    });
+    options.forEach((opt) => {
+      opt.hidden = !matches.includes(opt);
+      opt.classList.remove('active');
+      opt.setAttribute('aria-selected', 'false');
+    });
+    if (empty) empty.hidden = matches.length > 0;
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    setActive(matches.length ? 0 : -1);
+  };
+
+  const choose = (opt) => {
+    if (!opt) return;
+    hidden.value = opt.dataset.productId || '';
+    input.value = opt.dataset.name || '';
+    const rate = $(rateSel);
+    if (rate) rate.value = mode === 'purchase' ? (opt.dataset.cost || '') : (opt.dataset.price || '');
+    const qty = $(qtySel);
+    if (qty) {
+      qty.value = 1;
+      qty.focus();
+      qty.select();
+    }
+    const disc = discSel ? $(discSel) : null;
+    if (disc) disc.value = 0;
+    closeList();
+  };
+
+  input.addEventListener('input', () => {
+    hidden.value = '';
+    filterList();
+  });
+  input.addEventListener('focus', filterList);
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (document.activeElement !== input && !list.contains(document.activeElement)) closeList();
+    }, 180);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (list.hidden) filterList();
+      if (!matches.length) return;
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      const next = active < 0 ? (step > 0 ? 0 : matches.length - 1) : (active + step + matches.length) % matches.length;
+      setActive(next);
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (list.hidden) filterList();
+      const opt = matches[active] || matches[0];
+      if (opt) choose(opt);
+      else toast('No matching product found. Add the product first.', 'warn');
+      return;
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeList();
+      input.blur();
+      return;
+    }
+    if (e.key === 'Tab') closeList();
+  });
+
+  options.forEach((opt) => {
+    opt.addEventListener('mouseenter', () => setActive(matches.indexOf(opt)));
+    opt.addEventListener('click', () => choose(opt));
+  });
+  list.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.target.closest('.product-option')) e.preventDefault();
+  });
+  list.addEventListener('click', (e) => {
+    if (e.target.closest('[data-act]')) closeList();
+  });
+}
+
 function billingHTML() {
   const d = ensureDraft();
   const t = billTotals(d);
   const no = nextInvoiceNo(d.date);
   const customers = DB.parties.filter((p) => p.type === 'customer');
   const products = DB.products.slice().sort((a, b) => a.name.localeCompare(b.name));
-  const productOptions = products.map((p) => `<option value="${p.id}" data-price="${num(p.price)}" data-stock="${num(p.stock)}" data-track="${p.track !== false ? 1 : 0}">${esc(p.name)}${p.track !== false ? ` · ${num(p.stock)} ${esc(p.unit || '')} left` : ' · service'}</option>`).join('');
   const due = Math.max(0, t.total - num(d.received));
   const change = Math.max(0, num(d.received) - t.total);
   return `
@@ -1307,9 +1489,9 @@ function billingHTML() {
       </section>
 
       <section class="card">
-        <div class="card-head"><div><h2>Items</h2><p>Add products or services to this bill</p></div><button type="button" class="btn sm" data-act="new-product" data-for="bill">${ico('plus')} New product</button></div>
+        <div class="card-head"><div><h2>Items</h2><p>Type a product name or SKU, then press Enter</p></div><button type="button" class="btn sm" data-act="new-product" data-for="bill">${ico('plus')} New product</button></div>
         <div class="item-add">
-          <select class="input" id="itemProduct"><option value="">Select product…</option>${productOptions}</select>
+          ${productPickerHTML({ inputId: 'itemProductSearch', listId: 'itemProductResults', hiddenId: 'itemProduct', products, mode: 'sale', forBill: true })}
           <input class="input" id="itemQty" type="number" min="0.01" step="any" value="1" placeholder="Qty" title="Quantity">
           <input class="input" id="itemRate" type="number" min="0" step="any" placeholder="Rate" title="Rate">
           <input class="input" id="itemDisc" type="number" min="0" max="100" step="any" value="0" placeholder="Disc %" title="Discount percent">
@@ -1331,7 +1513,7 @@ function billingHTML() {
               <td class="r"><button type="button" class="icon-btn danger" data-act="remove-item" data-idx="${i}" title="Remove">${ico('trash')}</button></td>
             </tr>`;
           }).join('')}</tbody>
-        </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No items yet. Select a product above and click Add.</div>`}
+        </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No items yet. Type a product above and press Enter.</div>`}
       </section>
     </div>
 
@@ -1394,15 +1576,24 @@ function mountBilling() {
   if (noteEl) noteEl.addEventListener('input', () => { d.note = noteEl.value; });
   const recEl = $('#billReceived');
   if (recEl) recEl.addEventListener('input', () => { d.received = num(recEl.value); updateBillUI(); });
-  const prodEl = $('#itemProduct');
-  if (prodEl) prodEl.addEventListener('change', () => {
-    const opt = prodEl.selectedOptions[0];
-    if (opt && opt.value) {
-      $('#itemRate').value = opt.dataset.price || '';
-      $('#itemQty').value = 1;
-      $('#itemDisc').value = 0;
-      $('#itemQty').focus();
-    }
+  mountProductPicker({
+    inputSel: '#itemProductSearch',
+    listSel: '#itemProductResults',
+    hiddenSel: '#itemProduct',
+    rateSel: '#itemRate',
+    qtySel: '#itemQty',
+    discSel: '#itemDisc',
+    mode: 'sale',
+  });
+  ['#itemQty', '#itemRate', '#itemDisc'].forEach((sel) => {
+    const el = $(sel);
+    if (!el) return;
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addBillItem();
+      }
+    });
   });
   const itemsBody = $('#billItems');
   if (itemsBody) itemsBody.addEventListener('input', (e) => {
@@ -1443,7 +1634,7 @@ function addBillItem() {
   const d = ensureDraft();
   const sel = $('#itemProduct');
   const pid = sel ? sel.value : '';
-  if (!pid) { toast('Select a product first', 'warn'); return; }
+  if (!pid) { toast('Search and select a product first', 'warn'); $('#itemProductSearch')?.focus(); return; }
   const p = DB.products.find((x) => x.id === pid);
   if (!p) return;
   const qty = num($('#itemQty').value) || 1;
@@ -1463,7 +1654,10 @@ function addBillItem() {
     vat: p.vat !== false, vatRate: num(S().vatRate), cost: num(p.cost),
   });
   render();
-  setTimeout(() => { const q = $('#itemQty'); if (q) { q.value = 1; q.focus(); } }, 40);
+  setTimeout(() => {
+    const s = $('#itemProductSearch');
+    if (s) { s.value = ''; s.focus(); }
+  }, 40);
 }
 
 function saveBill(autoPrint) {
@@ -1925,9 +2119,9 @@ function purchaseFormHTML() {
         </div>
       </section>
       <section class="card">
-        <div class="card-head"><div><h2>Items received</h2><p>Stock is added when you save</p></div><button type="button" class="btn sm" data-act="new-product">${ico('plus')} New product</button></div>
+        <div class="card-head"><div><h2>Items received</h2><p>Type a product name or SKU, then press Enter</p></div><button type="button" class="btn sm" data-act="new-product">${ico('plus')} New product</button></div>
         <div class="item-add">
-          <select class="input" id="purProduct"><option value="">Select product…</option>${products.map((x) => `<option value="${x.id}" data-cost="${num(x.cost)}">${esc(x.name)}${x.track !== false ? ` · ${num(x.stock)} ${esc(x.unit || '')} left` : ' · service'}</option>`).join('')}</select>
+          ${productPickerHTML({ inputId: 'purProductSearch', listId: 'purProductResults', hiddenId: 'purProduct', products, mode: 'purchase', placeholder: 'Type product name or SKU…' })}
           <input class="input" id="purQty" type="number" min="0.01" step="any" value="1" placeholder="Qty">
           <input class="input" id="purRate" type="number" min="0" step="any" placeholder="Cost/unit">
           <button type="button" class="btn primary" data-act="add-purchase-item">${ico('plus')} Add</button>
@@ -1943,7 +2137,7 @@ function purchaseFormHTML() {
             <td class="r line-total"><strong>${money(num(it.qty) * num(it.rate))}</strong></td>
             <td class="r"><button type="button" class="icon-btn danger" data-act="remove-purchase-item" data-idx="${i}">${ico('trash')}</button></td>
           </tr>`).join('')}</tbody>
-        </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No items yet. Select a product and click Add.</div>`}
+        </table></div>` : `<div class="empty"><div class="big">${ico('cart')}</div>No items yet. Type a product above and press Enter.</div>`}
       </section>
     </div>
     <aside class="stack">
@@ -2009,14 +2203,23 @@ function mountPurchases() {
     if (noteEl) noteEl.addEventListener('input', () => { p.note = noteEl.value; });
     const vatEl = $('#purVat');
     if (vatEl) vatEl.addEventListener('change', () => { p.vat = vatEl.checked; updatePurchaseUI(); });
-    const prodEl = $('#purProduct');
-    if (prodEl) prodEl.addEventListener('change', () => {
-      const opt = prodEl.selectedOptions[0];
-      if (opt && opt.value) {
-        $('#purRate').value = opt.dataset.cost || '';
-        $('#purQty').value = 1;
-        $('#purQty').focus();
-      }
+    mountProductPicker({
+      inputSel: '#purProductSearch',
+      listSel: '#purProductResults',
+      hiddenSel: '#purProduct',
+      rateSel: '#purRate',
+      qtySel: '#purQty',
+      mode: 'purchase',
+    });
+    ['#purQty', '#purRate'].forEach((sel) => {
+      const el = $(sel);
+      if (!el) return;
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addPurchaseItem();
+        }
+      });
     });
     const body = $('#purItems');
     if (body) body.addEventListener('input', (e) => {
@@ -2062,7 +2265,7 @@ function addPurchaseItem() {
   const p = purchaseDraft;
   const sel = $('#purProduct');
   const pid = sel ? sel.value : '';
-  if (!pid) { toast('Select a product first', 'warn'); return; }
+  if (!pid) { toast('Search and select a product first', 'warn'); $('#purProductSearch')?.focus(); return; }
   const product = DB.products.find((x) => x.id === pid);
   if (!product) return;
   const qty = num($('#purQty').value) || 1;
@@ -2070,7 +2273,10 @@ function addPurchaseItem() {
   const rate = $('#purRate').value === '' ? num(product.cost) : num($('#purRate').value);
   p.items.push({ productId: product.id, name: product.name, unit: product.unit || '', qty, rate });
   render();
-  setTimeout(() => { const q = $('#purQty'); if (q) { q.value = 1; q.focus(); } }, 40);
+  setTimeout(() => {
+    const s = $('#purProductSearch');
+    if (s) { s.value = ''; s.focus(); }
+  }, 40);
 }
 
 function savePurchase() {

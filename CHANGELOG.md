@@ -13,6 +13,20 @@ All notable changes to this project are documented here. The format is based on 
 - Multi-store support.
 - Optional encrypted backup to a location the user chooses.
 
+## [1.2.2] - 2026-11-04
+
+### Added
+
+- Keyboard product search while billing: type a product name, SKU or category instead of scrolling a long dropdown.
+- Search results support arrow keys, Enter, Escape and mouse/touch selection.
+- Press Enter in the quantity, rate or discount field to add the item to the bill.
+- The same keyboard product search is available when recording purchases.
+
+### Changed
+
+- After adding an item, focus returns to the product search so the next item can be typed immediately.
+- Updated the app version to `1.2.2` and refreshed the offline app cache.
+
 ## [1.2.1] - 2026-11-03
 
 ### Changed
